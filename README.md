@@ -591,6 +591,7 @@ Purpose:
 Key features:
 
 - add transaction form for admins
+- labeled add transaction action button
 - edit transaction flow
 - delete transaction flow
 - custom delete confirmation dialog
@@ -609,6 +610,17 @@ The transaction search now matches:
 - type
 - amount
 - date
+
+How sorting works:
+
+The transaction sort control now supports:
+
+- newest first
+- oldest first
+- highest amount
+- lowest amount
+- A to Z
+- Z to A
 
 How delete works:
 
@@ -655,10 +667,12 @@ Responsive behavior includes:
 
 Some recent UI improvements in this codebase include:
 
+- clearer transaction filter behavior in dark mode
 - clearer add transaction button text
 - custom in-app delete confirmation dialog
 - themed mobile bottom navigation
 - custom tooltips where compact controls needed explanation
+- alphabetical transaction sorting
 - removal of non-functional global search UI
 
 ## How A Change Propagates Through The App

@@ -39,6 +39,14 @@ export function filterAndSortTransactions(transactions, filters) {
         return second.amount - first.amount;
       }
 
+      if (filters.sortBy === "merchant-asc") {
+        return first.merchant.localeCompare(second.merchant);
+      }
+
+      if (filters.sortBy === "merchant-desc") {
+        return second.merchant.localeCompare(first.merchant);
+      }
+
       return first.amount - second.amount;
     });
 }

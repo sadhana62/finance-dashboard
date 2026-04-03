@@ -35,6 +35,8 @@ const sortOptions = [
   { value: "date-asc", label: "Oldest first" },
   { value: "amount-desc", label: "Highest amount" },
   { value: "amount-asc", label: "Lowest amount" },
+  { value: "merchant-asc", label: "A to Z" },
+  { value: "merchant-desc", label: "Z to A" },
 ];
 
 export default function Transactions() {

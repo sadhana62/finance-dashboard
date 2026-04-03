@@ -23,3 +23,13 @@ input,
 select {
   font: inherit;
 }
+
+select {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+select option {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
