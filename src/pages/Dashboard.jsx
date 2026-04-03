@@ -71,7 +71,7 @@ export default function Dashboard() {
 
   return (
     <section className="space-y-6">
-      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr] xl:items-start">
+      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr]">
         <HeroPanel dashboard={dashboard} />
         <HighlightsPanel dashboard={dashboard} />
       </div>
@@ -103,9 +103,17 @@ export default function Dashboard() {
 }
 
 function HeroPanel({ dashboard }) {
+  const isPositive = dashboard.netSavings >= 0;
+  const titleText = isPositive
+    ? "Your financial health is looking strong this month."
+    : "Your finances might need a little attention.";
+  const descriptionText = isPositive
+    ? `Great job! You have a positive net cash flow of ${formatAmount(dashboard.netSavings)}. Your largest expense is ${dashboard.highestCategory}, keeping your estimated runway at ${dashboard.forecastRunway}.`
+    : `Your net cash flow is currently ${formatAmount(dashboard.netSavings)}. Consider reviewing your spending on ${dashboard.highestCategory} to help extend your ${dashboard.forecastRunway} runway.`;
+
   return (
-    <Panel className="overflow-hidden">
-      <div className="relative">
+    <Panel className="h-full overflow-hidden">
+      <div className="relative h-full">
         <div
           className="absolute -right-12 -top-16 h-40 w-40 rounded-full blur-3xl"
           style={{ background: "rgba(91, 140, 255, 0.18)" }}
@@ -115,17 +123,16 @@ function HeroPanel({ dashboard }) {
           style={{ background: "rgba(20, 184, 166, 0.12)" }}
         />
 
-        <div className="relative space-y-5">
+        <div className="relative flex h-full flex-col justify-between gap-5">
           <div>
             <p className="text-sm uppercase tracking-[0.28em] text-[var(--accent)]">
               Dashboard Overview
             </p>
             <h2 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight md:text-5xl">
-              Your finances look stable and improving.
+              {titleText}
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
-              Get a quick read on balance trends, monthly flow, and where most of
-              your spending is going.
+              {descriptionText}
             </p>
           </div>
 
@@ -142,7 +149,7 @@ function HeroPanel({ dashboard }) {
 
 function HighlightsPanel({ dashboard }) {
   return (
-    <Panel>
+    <Panel className="flex h-full flex-col justify-between">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
@@ -587,56 +594,59 @@ function BreakdownPanel({ dashboard, analytics }) {
               </div>
             </div>
 
-            <div className="grid gap-3">
-              {selectedSegments.map((item, index) => {
-                const percent =
-                  selectedTotal > 0 ? Math.round((item.amount / selectedTotal) * 100) : 0;
+            <div
+              className="flex min-h-[340px] flex-wrap items-center justify-center gap-6 rounded-[1.75rem] border p-6"
+              style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.01)" }}
+            >
+              {selectedSegments.filter((item) => item.amount > 0).length > 0 ? (
+                selectedSegments
+                  .filter((item) => item.amount > 0)
+                  .map((item, index) => {
+                    const percent =
+                      selectedTotal > 0 ? Math.round((item.amount / selectedTotal) * 100) : 0;
+                    const ratio = item.amount / selectedMaxAmount;
+                    const size = 90 + Math.sqrt(ratio) * 130; // Scales from 90px to 220px based on amount
 
-                return (
-                  <div
-                    key={`${activeMonth?.label}-${item.label}`}
-                    className="rounded-[1.35rem] border px-4 py-4"
-                    style={{
-                      borderColor: "var(--card-border)",
-                      background: "rgba(255,255,255,0.03)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <span
-                          className="h-3 w-3 rounded-full"
-                          style={{ background: ringColors[index % ringColors.length] }}
-                        />
-                        <div>
-                          <div className="font-medium">{item.label}</div>
-                          <div className="mt-1 text-sm text-[var(--text-secondary)]">
-                            {percent}% of {activeMonth?.label || "selected"} spending
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-sm text-[var(--text-secondary)]">
-                        {formatAmount(item.amount)}
-                      </div>
-                    </div>
+                    const colorIndex = analytics.topCategories.indexOf(item.label);
+                    const themeColor =
+                      ringColors[(colorIndex !== -1 ? colorIndex : index) % ringColors.length];
 
-                    <div
-                      className="mt-3 h-2.5 overflow-hidden rounded-full"
-                      style={{ background: "var(--bg-soft)" }}
-                    >
+                    return (
                       <div
-                        className="h-full rounded-full"
+                        key={`${activeMonth?.label}-${item.label}`}
+                        className="group flex flex-col items-center justify-center rounded-full text-center transition-transform hover:scale-105"
                         style={{
-                          width: `${percent}%`,
-                          background:
-                            index === 0
-                              ? "linear-gradient(90deg, #2563eb, #60a5fa)"
-                              : "linear-gradient(90deg, rgba(20,184,166,0.9), rgba(45,212,191,0.75))",
+                          width: size,
+                          height: size,
+                          background: `radial-gradient(circle at 30% 30%, ${themeColor}33, transparent)`,
+                          backgroundColor: "rgba(255,255,255,0.03)",
+                          border: `1.5px solid ${themeColor}99`,
+                          boxShadow: `0 8px 32px -8px ${themeColor}44`,
                         }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                      >
+                        <span className="max-w-[80%] truncate text-sm font-medium">
+                          {item.label}
+                        </span>
+                        <span className="mt-1 text-xs text-[var(--text-secondary)]">
+                          {formatAmount(item.amount)}
+                        </span>
+                        <span
+                          className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          style={{
+                            background: `${themeColor}22`,
+                            color: themeColor,
+                          }}
+                        >
+                          {percent}%
+                        </span>
+                      </div>
+                    );
+                  })
+              ) : (
+                <div className="text-sm text-[var(--text-secondary)]">
+                  No spending data for this month
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -655,19 +665,17 @@ function CashFlowPanel({ dashboard }) {
   const [activeMonth, setActiveMonth] = useState(
     dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null,
   );
-  const width = 100;
+  const width = 760;
   const height = 220;
-  const xOffset = 12;
-  const chartWidth = 76;
+  const xOffset = 24;
+  const chartWidth = 700;
   const step =
     dashboard.monthlyBars.length > 1
       ? chartWidth / (dashboard.monthlyBars.length - 1)
       : 0;
   const values = dashboard.monthlyBars.flatMap((item) => [item.income, item.expense]);
-  const totalMovements = dashboard.monthlyBars.map((item) => item.income + item.expense);
   const min = values.length > 0 ? Math.min(...values) : 0;
   const max = values.length > 0 ? Math.max(...values) : 0;
-  const maxTotalMovement = totalMovements.length > 0 ? Math.max(...totalMovements) : 1;
   const spread = max - min || 1;
   const axisLabels = [max, max - spread / 2, min].map((value) => Math.round(value));
 
@@ -681,19 +689,21 @@ function CashFlowPanel({ dashboard }) {
     .map((item, index) => `${xOffset + index * step},${getY(item.expense)}`)
     .join(" ");
 
+  const incomeArea = `${xOffset},${height} ${incomePoints} ${xOffset + chartWidth},${height}`;
+  const expenseArea = `${xOffset},${height} ${expensePoints} ${xOffset + chartWidth},${height}`;
+
   return (
     <Panel>
       <div className="flex items-end justify-between gap-4">
         <div>
           <h3 className="text-2xl font-semibold tracking-tight">Income vs expenses</h3>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Compare how inflows and outflows have changed across recent months, with larger bubbles highlighting busier months.
+            Compare how inflows and outflows have changed across recent months.
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
           <LegendDot color="rgba(37, 99, 235, 0.9)" label="Income" />
           <LegendDot color="rgba(251, 113, 133, 0.9)" label="Expenses" />
-          <LegendDot color="rgba(91, 140, 255, 0.3)" label="Month volume" />
         </div>
       </div>
 
@@ -701,7 +711,7 @@ function CashFlowPanel({ dashboard }) {
         className="mt-8 rounded-[1.75rem] border p-4"
         style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
       >
-        <div className="grid gap-4 md:grid-cols-[82px_1fr] md:items-end">
+        <div className="grid gap-4 md:grid-cols-[120px_1fr] md:items-end">
           <div className="hidden h-64 md:flex md:flex-col md:justify-between">
             {axisLabels.map((label) => (
               <span key={label} className="text-xs text-[var(--text-secondary)]">
@@ -710,7 +720,22 @@ function CashFlowPanel({ dashboard }) {
             ))}
           </div>
 
-          <svg viewBox={`0 0 ${width} ${height}`} className="h-64 w-full">
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="xMinYMid meet"
+            className="block h-64 w-full"
+          >
+            <defs>
+              <linearGradient id="incomeArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="rgba(37, 99, 235, 0.45)" />
+                <stop offset="100%" stopColor="rgba(37, 99, 235, 0.02)" />
+              </linearGradient>
+              <linearGradient id="expenseArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="rgba(251, 113, 133, 0.45)" />
+                <stop offset="100%" stopColor="rgba(251, 113, 133, 0.02)" />
+              </linearGradient>
+            </defs>
+
             {[0, 1, 2, 3].map((line) => {
               const y = 22 + line * 48;
               return (
@@ -726,27 +751,8 @@ function CashFlowPanel({ dashboard }) {
               );
             })}
 
-            {dashboard.monthlyBars.map((item, index) => {
-              const x = xOffset + index * step;
-              const incomeY = getY(item.income);
-              const expenseY = getY(item.expense);
-              const bubbleY = (incomeY + expenseY) / 2;
-              const bubbleRadius =
-                6 + ((item.income + item.expense) / Math.max(maxTotalMovement, 1)) * 10;
-              const isActive = activeMonth?.label === item.label;
-
-              return (
-                <circle
-                  key={`${item.label}-bubble`}
-                  cx={x}
-                  cy={bubbleY}
-                  r={bubbleRadius}
-                  fill="rgba(91, 140, 255, 0.16)"
-                  stroke="rgba(91, 140, 255, 0.28)"
-                  strokeWidth={isActive ? "1.6" : "1"}
-                />
-              );
-            })}
+            <polygon points={incomeArea} fill="url(#incomeArea)" />
+            <polygon points={expenseArea} fill="url(#expenseArea)" />
 
             <polyline
               points={incomePoints}
@@ -776,7 +782,7 @@ function CashFlowPanel({ dashboard }) {
                   <circle
                     cx={x}
                     cy={incomeY}
-                    r={isActive ? "5.2" : "3.2"}
+                    r={isActive ? "6.5" : "4"}
                     fill="rgba(37, 99, 235, 0.95)"
                     className="cursor-pointer"
                     onMouseEnter={() => setActiveMonth(item)}
@@ -785,7 +791,7 @@ function CashFlowPanel({ dashboard }) {
                   <circle
                     cx={x}
                     cy={expenseY}
-                    r={isActive ? "5.2" : "3.2"}
+                    r={isActive ? "6.5" : "4"}
                     fill="rgba(251, 113, 133, 0.95)"
                     className="cursor-pointer"
                     onMouseEnter={() => setActiveMonth(item)}

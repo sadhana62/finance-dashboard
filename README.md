@@ -10,7 +10,9 @@ The app uses a local mock JSON file as its data source, Redux Toolkit for state 
 
 ## Design Origin
 
-This UI feels like a Figma-first dashboard exploration brought into code.
+Before actual implementation, several initial UI designs were created to map out the project's requirements. The design also took reference from Google Stitch to align with the desired aesthetic and functionality. To understand the underlying data flow, various existing transaction tracking applications were explored, along with research across the internet and related websites.
+
+
 
 That is an inference from the structure and styling, not a literal export pipeline. The page is built with:
 
