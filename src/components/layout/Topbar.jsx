@@ -1,51 +1,17 @@
-import { Bell, Search, Settings } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
 import ThemeToggle from "../ui/ThemeToggle";
 import RoleSwitcher from "../ui/RoleSwitcher.jsx";
+import { selectRole, setRole } from "../../store/financeSlice";
 
-export default function Topbar({ theme, setTheme, role, setRole }) {
+export default function Topbar({ theme, setTheme }) {
+  const dispatch = useDispatch();
+  const role = useSelector(selectRole);
+
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex flex-1 items-center gap-3">
-        <div
-          className="flex w-full max-w-md items-center gap-3 rounded-full border px-4 py-3"
-          style={{
-            background: "var(--bg-elevated)",
-            borderColor: "var(--card-border)",
-            boxShadow: "var(--shadow)",
-          }}
-        >
-          <Search size={18} className="text-[var(--text-secondary)]" />
-          <input
-            placeholder="Search analytics..."
-            className="w-full bg-transparent outline-none placeholder:text-[var(--text-muted)]"
-          />
-        </div>
-
-        <RoleSwitcher role={role} setRole={setRole} />
-      </div>
-
-      <div className="flex items-center gap-3">
+    <div className="flex w-full justify-end">
+      <div className="flex w-full flex-wrap items-center justify-end gap-3">
+        <RoleSwitcher role={role} setRole={(value) => dispatch(setRole(value))} />
         <ThemeToggle theme={theme} setTheme={setTheme} />
-
-        <button
-          className="rounded-full border p-3"
-          style={{
-            background: "var(--bg-elevated)",
-            borderColor: "var(--card-border)",
-          }}
-        >
-          <Bell size={18} />
-        </button>
-
-        <button
-          className="rounded-full border p-3"
-          style={{
-            background: "var(--bg-elevated)",
-            borderColor: "var(--card-border)",
-          }}
-        >
-          <Settings size={18} />
-        </button>
       </div>
     </div>
   );

@@ -1,79 +1,1103 @@
+import { useState } from "react";
+import { ArrowDownRight, ArrowUpRight, PiggyBank, Wallet } from "lucide-react";
+import { useSelector } from "react-redux";
+import {
+  selectDashboardData,
+  selectFinanceStatus,
+  selectTransactions,
+} from "../store/financeSlice";
+import { formatAmount } from "../utils/formatters";
+
+const cardIcons = {
+  balance: Wallet,
+  income: ArrowUpRight,
+  expense: ArrowDownRight,
+  savings: PiggyBank,
+};
+
+const ringColors = ["#2563eb", "#14b8a6", "#f59e0b", "#fb7185", "#8b5cf6"];
+
 export default function Dashboard() {
+  const status = useSelector(selectFinanceStatus);
+  const transactions = useSelector(selectTransactions);
+  const dashboard = useSelector(selectDashboardData);
+  const analytics = buildDashboardAnalytics(transactions, dashboard.spendingBreakdown);
+
+  if (status === "loading" && transactions.length === 0) {
+    return <LoadingState />;
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <section className="space-y-6">
+        <EmptyPanel
+          title="No dashboard data available"
+          detail="Add a few records to see your financial overview here."
+        />
+      </section>
+    );
+  }
+
+  const summaryCards = [
+    {
+      key: "balance",
+      title: "Total Balance",
+      value: formatAmount(dashboard.totalBalance),
+      detail: "latest trend point",
+      tone: "positive",
+    },
+    {
+      key: "income",
+      title: "Income",
+      value: formatAmount(dashboard.currentIncome),
+      detail: "current month",
+      tone: "positive",
+    },
+    {
+      key: "expense",
+      title: "Expenses",
+      value: formatAmount(dashboard.currentExpense),
+      detail: "current month",
+      tone: "neutral",
+    },
+    {
+      key: "savings",
+      title: "Saved This Month",
+      value: formatAmount(dashboard.netSavings),
+      detail: `${dashboard.savingsRate}% savings rate`,
+      tone: dashboard.netSavings >= 0 ? "positive" : "neutral",
+    },
+  ];
+
   return (
     <section className="space-y-6">
-      <div>
-        <p className="text-sm uppercase tracking-[0.3em] text-[var(--accent)]">
-          Intelligence Intelligence
-        </p>
-        <h2 className="mt-3 text-5xl font-semibold tracking-tight">
-          Financial Velocity
-        </h2>
-        <p className="mt-3 max-w-2xl text-lg text-[var(--text-secondary)]">
-          Your capital flow is optimizing. We’ve identified key shifts in your
-          monthly spending architecture.
-        </p>
+      <div className="grid gap-6 xl:grid-cols-[1.35fr_0.9fr] xl:items-start">
+        <HeroPanel dashboard={dashboard} />
+        <HighlightsPanel dashboard={dashboard} />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-        <div className="grid gap-6 md:grid-cols-2">
-          <GlassCard
-            title="Highest Spending Category"
-            value="Dining Out"
-            subValue="$1,200 this period"
+      <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
+        {summaryCards.map((card) => (
+          <SummaryCard
+            key={card.key}
+            icon={cardIcons[card.key]}
+            title={card.title}
+            value={card.value}
+            detail={card.detail}
+            tone={card.tone}
           />
-          <GlassCard
-            title="Monthly Comparison"
-            value="Savings Yield"
-            subValue="+15% more than last month"
-          />
-        </div>
+        ))}
+      </div>
 
-        <div className="flex items-start justify-end gap-4">
-          <ActionButton label="Export Report" secondary />
-          <ActionButton label="Plan Future Flow" />
+      <div className="grid gap-6">
+        <TrendPanel analytics={analytics} />
+        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+          <BreakdownPanel dashboard={dashboard} analytics={analytics} />
+          <BubbleInsightsPanel analytics={analytics} />
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.6fr_0.8fr]">
-        <Panel title="Income vs. Expenses" className="h-[420px]" />
-        <Panel title="Top Merchants" className="h-[420px]" />
+      <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+        <CashFlowPanel dashboard={dashboard} />
+        <SnapshotPanel dashboard={dashboard} />
       </div>
-
-      <Panel className="min-h-[320px]">
-        <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-[var(--accent)]">
-              AI-Powered Projection
-            </p>
-            <h3 className="mt-5 text-5xl font-semibold tracking-tight">
-              Redefine your 2024 tax strategy.
-            </h3>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--text-secondary)]">
-              Based on your current velocity, you're on track for a 12% surplus.
-              Our intelligence recommends shifting $4,500 to your high-yield ledger.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <ActionButton label="Run Simulation" />
-              <ActionButton label="Learn More" secondary />
-            </div>
-          </div>
-
-          <div
-            className="min-h-[260px] rounded-[2rem] border"
-            style={{
-              background:
-                "radial-gradient(circle at center, rgba(91,140,255,0.35), transparent 55%), var(--bg-elevated)",
-              borderColor: "var(--card-border)",
-            }}
-          />
-        </div>
-      </Panel>
     </section>
   );
 }
 
-function GlassCard({ title, value, subValue }) {
+function HeroPanel({ dashboard }) {
+  return (
+    <Panel className="overflow-hidden">
+      <div className="relative">
+        <div
+          className="absolute -right-12 -top-16 h-40 w-40 rounded-full blur-3xl"
+          style={{ background: "rgba(91, 140, 255, 0.18)" }}
+        />
+        <div
+          className="absolute bottom-0 right-20 h-28 w-28 rounded-full blur-3xl"
+          style={{ background: "rgba(20, 184, 166, 0.12)" }}
+        />
+
+        <div className="relative space-y-5">
+          <div>
+            <p className="text-sm uppercase tracking-[0.28em] text-[var(--accent)]">
+              Dashboard Overview
+            </p>
+            <h2 className="mt-3 max-w-2xl text-4xl font-semibold tracking-tight md:text-5xl">
+              Your finances look stable and improving.
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--text-secondary)] md:text-lg">
+              Get a quick read on balance trends, monthly flow, and where most of
+              your spending is going.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <MetricChip label="Net Cash Flow" value={formatAmount(dashboard.netSavings)} />
+            <MetricChip label="Largest Spend" value={dashboard.highestCategory} />
+            <MetricChip label="Forecast Runway" value={dashboard.forecastRunway} />
+          </div>
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function HighlightsPanel({ dashboard }) {
+  return (
+    <Panel>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
+            This Month
+          </p>
+          <h3 className="mt-3 text-2xl font-semibold tracking-tight">
+            {dashboard.comparisonTitle}
+          </h3>
+        </div>
+        <span
+          className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em]"
+          style={{
+            background:
+              dashboard.healthLabel === "Healthy"
+                ? "rgba(52, 211, 153, 0.12)"
+                : "rgba(245, 158, 11, 0.14)",
+            color:
+              dashboard.healthLabel === "Healthy"
+                ? "var(--success)"
+                : "var(--warning)",
+          }}
+        >
+          {dashboard.healthLabel}
+        </span>
+      </div>
+
+      <div className="mt-8 space-y-5">
+        <ProgressRow
+          label="Budget Used"
+          value={`${dashboard.goals.budgetUsed}%`}
+          width={`${dashboard.goals.budgetUsed}%`}
+        />
+        <ProgressRow
+          label="Savings Goal"
+          value={`${dashboard.goals.savingsGoal}%`}
+          width={`${dashboard.goals.savingsGoal}%`}
+        />
+        <ProgressRow
+          label="Recurring Bills"
+          value={`${dashboard.goals.recurringBills}%`}
+          width={`${dashboard.goals.recurringBills}%`}
+        />
+      </div>
+
+      <div
+        className="mt-8 rounded-[1.6rem] border p-5"
+        style={{
+          borderColor: "var(--card-border)",
+          background:
+            "linear-gradient(135deg, rgba(91, 140, 255, 0.14), rgba(20, 184, 166, 0.06))",
+        }}
+      >
+        <p className="text-sm text-[var(--text-secondary)]">Recommendation</p>
+        <p className="mt-2 text-lg font-semibold tracking-tight">
+          {dashboard.recommendation}
+        </p>
+      </div>
+    </Panel>
+  );
+}
+
+function SummaryCard({ title, value, detail, tone, icon }) {
+  const IconComponent = icon;
+
+  return (
+    <Panel className="p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-sm text-[var(--text-secondary)]">{title}</p>
+          <h3 className="mt-3 text-3xl font-semibold tracking-tight">{value}</h3>
+        </div>
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-2xl"
+          style={{
+            background:
+              tone === "positive" ? "rgba(52, 211, 153, 0.12)" : "var(--accent-soft)",
+            color: tone === "positive" ? "var(--success)" : "var(--accent)",
+          }}
+        >
+          <IconComponent size={20} />
+        </div>
+      </div>
+
+      <div className="mt-6 text-sm text-[var(--text-secondary)]">{detail}</div>
+    </Panel>
+  );
+}
+
+function TrendPanel({ analytics }) {
+  const [activePoint, setActivePoint] = useState(
+    analytics.monthlyActivity[analytics.monthlyActivity.length - 1] || null,
+  );
+  const chartHeight = 220;
+  const width = 760;
+  const chartWidth = 700;
+  const xOffset = 24;
+  const step =
+    analytics.monthlyActivity.length > 1
+      ? chartWidth / (analytics.monthlyActivity.length - 1)
+      : 0;
+  const values = analytics.monthlyActivity.map((item) => item.count);
+  const min = values.length > 0 ? Math.min(...values) : 0;
+  const max = values.length > 0 ? Math.max(...values) : 0;
+  const spread = max - min || 1;
+  const averageCount =
+    values.length > 0
+      ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length)
+      : 0;
+  const change =
+    values.length > 1 ? values[values.length - 1] - values[values.length - 2] : 0;
+  const highestPoint = analytics.monthlyActivity.reduce(
+    (best, current) => (current.value > (best?.value ?? -Infinity) ? current : best),
+    null,
+  );
+  const busiestPoint = analytics.monthlyActivity.reduce(
+    (best, current) => (current.count > (best?.count ?? -Infinity) ? current : best),
+    null,
+  );
+  const axisLabels = [max, max - spread / 2, min].map((value) => Math.round(value));
+  const trendValues = calculateTrendLine(values);
+
+  const points = analytics.monthlyActivity
+    .map((item, index) => {
+      const x = xOffset + index * step;
+      const y = chartHeight - ((item.count - min) / spread) * (chartHeight - 24) - 12;
+      return `${x},${y}`;
+    })
+    .join(" ");
+  const trendPoints = trendValues
+    .map((value, index) => {
+      const x = xOffset + index * step;
+      const y = chartHeight - ((value - min) / spread) * (chartHeight - 24) - 12;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const areaPoints = `${xOffset},${chartHeight} ${points} ${
+    xOffset + chartWidth
+  },${chartHeight}`;
+
+  return (
+    <Panel>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight">Transaction volume trend</h3>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            Monthly transaction activity with a statistical trend line and peak-volume markers.
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-sm text-[var(--text-secondary)]">Latest month</p>
+          <p className="mt-2 text-2xl font-semibold">
+            {(values[values.length - 1] || 0).toLocaleString()} txns
+          </p>
+          <p
+            className="mt-2 text-sm font-medium"
+            style={{ color: change >= 0 ? "var(--success)" : "var(--warning)" }}
+          >
+            {change >= 0 ? "+" : "-"}
+            {Math.abs(change)} vs previous month
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-8 rounded-[1.75rem] border p-4" style={{ borderColor: "var(--card-border)" }}>
+        <div className="mb-5 grid gap-3 md:grid-cols-3">
+          <ChartStat
+            label="Selected month"
+            value={activePoint?.label || "N/A"}
+            detail={
+              activePoint
+                ? `${activePoint.count} transactions | Net ${formatAmount(activePoint.net)}`
+                : "No data"
+            }
+          />
+          <ChartStat
+            label="Strongest net month"
+            value={highestPoint?.label || "N/A"}
+            detail={highestPoint ? formatAmount(highestPoint.value) : "No data"}
+          />
+          <ChartStat
+            label="Busiest month"
+            value={busiestPoint?.label || "N/A"}
+            detail={
+              busiestPoint
+                ? `${busiestPoint.count} transactions | Avg ${averageCount}/month`
+                : "No data"
+            }
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-[72px_1fr] md:items-end">
+          <div className="hidden h-64 md:flex md:flex-col md:justify-between">
+            {axisLabels.map((label) => (
+              <span key={label} className="text-xs text-[var(--text-secondary)]">
+                {label.toLocaleString()}
+              </span>
+            ))}
+          </div>
+
+          <svg
+            viewBox={`0 0 ${width} ${chartHeight}`}
+            preserveAspectRatio="xMinYMid meet"
+            className="block h-64 w-full"
+          >
+          <defs>
+            <linearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="rgba(91, 140, 255, 0.45)" />
+              <stop offset="100%" stopColor="rgba(91, 140, 255, 0.02)" />
+            </linearGradient>
+          </defs>
+
+          {[0, 1, 2, 3].map((line) => {
+            const y = 20 + line * 50;
+            return (
+              <line
+                key={line}
+                x1={xOffset}
+                x2={xOffset + chartWidth}
+                y1={y}
+                y2={y}
+                stroke="var(--card-border)"
+                strokeDasharray="3 4"
+              />
+            );
+          })}
+
+          <polygon points={areaPoints} fill="url(#trendArea)" />
+          <polyline
+            points={points}
+            fill="none"
+            stroke="var(--accent)"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+          <polyline
+            points={trendPoints}
+            fill="none"
+            stroke="rgba(20, 184, 166, 0.95)"
+            strokeWidth="1.8"
+            strokeDasharray="4 4"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+
+          {analytics.monthlyActivity.map((item, index) => {
+            const x = xOffset + index * step;
+            const y = chartHeight - ((item.count - min) / spread) * (chartHeight - 24) - 12;
+            const isActive = activePoint?.label === item.label;
+
+            return (
+              <g key={item.label}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={isActive ? "5.8" : "2.7"}
+                  fill="var(--bg-elevated)"
+                />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r={isActive ? "8.5" : "4.8"}
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth={isActive ? "2.2" : "1.5"}
+                  className="cursor-pointer"
+                  onMouseEnter={() => setActivePoint(item)}
+                  onFocus={() => setActivePoint(item)}
+                />
+              </g>
+            );
+          })}
+
+          {analytics.monthlyActivity.map((item, index) => {
+            const x = xOffset + index * step;
+
+            return (
+              <text
+                key={`${item.label}-axis`}
+                x={x}
+                y={chartHeight - 2}
+                textAnchor="middle"
+                fill="var(--text-secondary)"
+                fontSize="4"
+              >
+                {item.label}
+              </text>
+            );
+          })}
+        </svg>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-5">
+          {analytics.monthlyActivity.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onMouseEnter={() => setActivePoint(item)}
+              onFocus={() => setActivePoint(item)}
+              onClick={() => setActivePoint(item)}
+              className="rounded-full border px-3 py-2 text-left transition"
+              style={{
+                borderColor:
+                  activePoint?.label === item.label
+                    ? "var(--accent-border)"
+                    : "var(--card-border)",
+                background:
+                  activePoint?.label === item.label
+                    ? "var(--accent-soft)"
+                    : "rgba(255,255,255,0.03)",
+                color:
+                  activePoint?.label === item.label
+                    ? "var(--text-primary)"
+                    : "var(--text-secondary)",
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </Panel>
+  );
+}
+
+function BreakdownPanel({ dashboard, analytics }) {
+  const defaultMonth =
+    analytics.categoryTimeline.find((month) => month.label === "Mar") ||
+    analytics.categoryTimeline[analytics.categoryTimeline.length - 1] ||
+    null;
+  const [activeMonth, setActiveMonth] = useState(
+    defaultMonth,
+  );
+  const selectedSegments = [...(activeMonth?.segments || [])].sort(
+    (first, second) => second.amount - first.amount,
+  );
+  const selectedTotal = activeMonth?.total || 0;
+  const selectedTopCategory = selectedSegments[0];
+  const selectedMaxAmount = Math.max(...selectedSegments.map((item) => item.amount), 1);
+
+  return (
+    <Panel>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight">Expenditure by category</h3>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            Switch months to compare category mix and spending concentration over time.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {analytics.categoryTimeline.map((month) => {
+            const isActive = activeMonth?.label === month.label;
+
+            return (
+              <button
+                key={month.label}
+                type="button"
+                onClick={() => setActiveMonth(month)}
+                className="rounded-full border px-3 py-2 text-sm transition"
+                style={{
+                  borderColor: isActive ? "var(--accent-border)" : "var(--card-border)",
+                  background: isActive ? "var(--accent-soft)" : "rgba(255,255,255,0.03)",
+                  color: isActive ? "var(--text-primary)" : "var(--text-secondary)",
+                }}
+              >
+                {month.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {dashboard.spendingBreakdown.length > 0 ? (
+        <div className="mt-8 space-y-6">
+          <div
+            className="rounded-[1.75rem] border p-5"
+            style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
+                  Month overview
+                </p>
+                <h4 className="mt-2 text-3xl font-semibold tracking-tight">
+                  {activeMonth?.label || "N/A"}
+                </h4>
+                <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                  Month-wise category view for the selected month.
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-[var(--text-secondary)]">Total spend</p>
+                <p className="mt-2 text-2xl font-semibold">{formatAmount(selectedTotal)}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center gap-4 text-xs text-[var(--text-secondary)]">
+              {analytics.topCategories.map((category, index) => (
+                <LegendDot
+                  key={category}
+                  color={ringColors[index % ringColors.length]}
+                  label={category}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
+            <div
+              className="rounded-[1.75rem] border p-5"
+              style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+            >
+              <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
+                Selected month
+              </p>
+              <h4 className="mt-3 text-3xl font-semibold tracking-tight">
+                {activeMonth?.label || "N/A"}
+              </h4>
+
+              <div className="mt-6 space-y-3">
+                <ChartStat
+                  label="Total expense"
+                  value={formatAmount(selectedTotal)}
+                  detail="Combined category spending"
+                />
+                <ChartStat
+                  label="Top category"
+                  value={selectedTopCategory?.label || "No spend"}
+                  detail={
+                    selectedTopCategory
+                      ? `${formatAmount(selectedTopCategory.amount)} spent in this category`
+                      : "No category data"
+                  }
+                />
+                <ChartStat
+                  label="Active categories"
+                  value={selectedSegments.filter((item) => item.amount > 0).length.toString()}
+                  detail="Categories with spending in this month"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-3">
+              {selectedSegments.map((item, index) => {
+                const percent =
+                  selectedTotal > 0 ? Math.round((item.amount / selectedTotal) * 100) : 0;
+
+                return (
+                  <div
+                    key={`${activeMonth?.label}-${item.label}`}
+                    className="rounded-[1.35rem] border px-4 py-4"
+                    style={{
+                      borderColor: "var(--card-border)",
+                      background: "rgba(255,255,255,0.03)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ background: ringColors[index % ringColors.length] }}
+                        />
+                        <div>
+                          <div className="font-medium">{item.label}</div>
+                          <div className="mt-1 text-sm text-[var(--text-secondary)]">
+                            {percent}% of {activeMonth?.label || "selected"} spending
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-sm text-[var(--text-secondary)]">
+                        {formatAmount(item.amount)}
+                      </div>
+                    </div>
+
+                    <div
+                      className="mt-3 h-2.5 overflow-hidden rounded-full"
+                      style={{ background: "var(--bg-soft)" }}
+                    >
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${percent}%`,
+                          background:
+                            index === 0
+                              ? "linear-gradient(90deg, #2563eb, #60a5fa)"
+                              : "linear-gradient(90deg, rgba(20,184,166,0.9), rgba(45,212,191,0.75))",
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <EmptyPanel
+          title="No spending categories yet"
+          detail="Your expense categories will appear here once transactions are added."
+          compact
+        />
+      )}
+    </Panel>
+  );
+}
+
+function BubbleInsightsPanel({ analytics }) {
+  const [activeBubble, setActiveBubble] = useState(analytics.bubbleData[0] || null);
+  const maxAverage = Math.max(...analytics.bubbleData.map((item) => item.averageAmount), 1);
+
+  return (
+    <Panel>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight">Category insights</h3>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            Bigger bubbles show heavier spend, while the position compares category share and average transaction size.
+          </p>
+        </div>
+      </div>
+
+      {analytics.bubbleData.length > 0 ? (
+        <>
+          <div
+            className="mt-8 rounded-[1.75rem] border p-4"
+            style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+          >
+            <svg viewBox="0 0 100 100" className="h-80 w-full">
+              {[20, 40, 60, 80].map((value) => (
+                <line
+                  key={`h-${value}`}
+                  x1="10"
+                  x2="92"
+                  y1={value}
+                  y2={value}
+                  stroke="var(--card-border)"
+                  strokeDasharray="3 4"
+                />
+              ))}
+              {[25, 50, 75].map((value) => (
+                <line
+                  key={`v-${value}`}
+                  x1={value}
+                  x2={value}
+                  y1="10"
+                  y2="92"
+                  stroke="var(--card-border)"
+                  strokeDasharray="3 4"
+                />
+              ))}
+
+              {analytics.bubbleData.map((item, index) => {
+                const isActive = activeBubble?.label === item.label;
+                const x = 14 + item.percent * 0.72;
+                const y = 90 - (item.averageAmount / maxAverage) * 68;
+
+                return (
+                  <g key={item.label}>
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r={item.radius}
+                      fill={ringColors[index % ringColors.length]}
+                      fillOpacity={isActive ? "0.88" : "0.68"}
+                      stroke="rgba(255,255,255,0.8)"
+                      strokeWidth={isActive ? "1.5" : "0.8"}
+                      className="cursor-pointer"
+                      onMouseEnter={() => setActiveBubble(item)}
+                      onFocus={() => setActiveBubble(item)}
+                    />
+                    <text
+                      x={x}
+                      y={y}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fill="#fff"
+                      fontSize={isActive ? "4" : "3.2"}
+                      fontWeight="700"
+                    >
+                      {item.shortLabel}
+                    </text>
+                  </g>
+                );
+              })}
+
+              <text x="10" y="98" fill="var(--text-secondary)" fontSize="3.2">
+                Lower share
+              </text>
+              <text x="78" y="98" fill="var(--text-secondary)" fontSize="3.2">
+                Higher share
+              </text>
+              <text
+                x="3"
+                y="16"
+                fill="var(--text-secondary)"
+                fontSize="3.2"
+                transform="rotate(-90 3 16)"
+              >
+                Higher avg spend
+              </text>
+            </svg>
+          </div>
+
+          <div className="mt-6 grid gap-3">
+            {analytics.bubbleData.map((item, index) => {
+              const isActive = activeBubble?.label === item.label;
+
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onMouseEnter={() => setActiveBubble(item)}
+                  onFocus={() => setActiveBubble(item)}
+                  onClick={() => setActiveBubble(item)}
+                  className="flex items-center justify-between gap-4 rounded-[1.3rem] border px-4 py-4 text-left transition"
+                  style={{
+                    borderColor: isActive ? "var(--accent-border)" : "var(--card-border)",
+                    background: isActive ? "var(--accent-soft)" : "rgba(255,255,255,0.03)",
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-3 w-3 rounded-full"
+                      style={{ background: ringColors[index % ringColors.length] }}
+                    />
+                    <div>
+                      <p className="font-medium">{item.label}</p>
+                      <p className="text-sm text-[var(--text-secondary)]">
+                        {item.percent}% share | {item.transactionCount} transactions
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right text-sm text-[var(--text-secondary)]">
+                    <p>{formatAmount(item.amount)}</p>
+                    <p>Avg {formatAmount(item.averageAmount)}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <EmptyPanel
+          title="No category statistics yet"
+          detail="Add expense transactions to unlock the bubble comparison."
+          compact
+        />
+      )}
+    </Panel>
+  );
+}
+
+function CashFlowPanel({ dashboard }) {
+  const [activeMonth, setActiveMonth] = useState(
+    dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null,
+  );
+  const width = 100;
+  const height = 220;
+  const xOffset = 12;
+  const chartWidth = 76;
+  const step =
+    dashboard.monthlyBars.length > 1
+      ? chartWidth / (dashboard.monthlyBars.length - 1)
+      : 0;
+  const values = dashboard.monthlyBars.flatMap((item) => [item.income, item.expense]);
+  const min = values.length > 0 ? Math.min(...values) : 0;
+  const max = values.length > 0 ? Math.max(...values) : 0;
+  const spread = max - min || 1;
+  const axisLabels = [max, max - spread / 2, min].map((value) => Math.round(value));
+
+  const getY = (value) =>
+    height - ((value - min) / spread) * (height - 32) - 16;
+
+  const incomePoints = dashboard.monthlyBars
+    .map((item, index) => `${xOffset + index * step},${getY(item.income)}`)
+    .join(" ");
+  const expensePoints = dashboard.monthlyBars
+    .map((item, index) => `${xOffset + index * step},${getY(item.expense)}`)
+    .join(" ");
+
+  return (
+    <Panel>
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight">Income vs expenses</h3>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            Compare how inflows and outflows have changed across recent months.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
+          <LegendDot color="rgba(37, 99, 235, 0.9)" label="Income" />
+          <LegendDot color="rgba(251, 113, 133, 0.9)" label="Expenses" />
+        </div>
+      </div>
+
+      <div
+        className="mt-8 rounded-[1.75rem] border p-4"
+        style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+      >
+        <div className="grid gap-4 md:grid-cols-[82px_1fr] md:items-end">
+          <div className="hidden h-64 md:flex md:flex-col md:justify-between">
+            {axisLabels.map((label) => (
+              <span key={label} className="text-xs text-[var(--text-secondary)]">
+                {formatAmount(label)}
+              </span>
+            ))}
+          </div>
+
+          <svg viewBox={`0 0 ${width} ${height}`} className="h-64 w-full">
+            {[0, 1, 2, 3].map((line) => {
+              const y = 22 + line * 48;
+              return (
+                <line
+                  key={line}
+                  x1={xOffset}
+                  x2={xOffset + chartWidth}
+                  y1={y}
+                  y2={y}
+                  stroke="var(--card-border)"
+                  strokeDasharray="3 4"
+                />
+              );
+            })}
+
+            <polyline
+              points={incomePoints}
+              fill="none"
+              stroke="rgba(37, 99, 235, 0.95)"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <polyline
+              points={expensePoints}
+              fill="none"
+              stroke="rgba(251, 113, 133, 0.95)"
+              strokeWidth="2.8"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+
+            {dashboard.monthlyBars.map((item, index) => {
+              const x = xOffset + index * step;
+              const incomeY = getY(item.income);
+              const expenseY = getY(item.expense);
+              const isActive = activeMonth?.label === item.label;
+
+              return (
+                <g key={item.label}>
+                  <circle
+                    cx={x}
+                    cy={incomeY}
+                    r={isActive ? "5.2" : "3.2"}
+                    fill="rgba(37, 99, 235, 0.95)"
+                    className="cursor-pointer"
+                    onMouseEnter={() => setActiveMonth(item)}
+                    onFocus={() => setActiveMonth(item)}
+                  />
+                  <circle
+                    cx={x}
+                    cy={expenseY}
+                    r={isActive ? "5.2" : "3.2"}
+                    fill="rgba(251, 113, 133, 0.95)"
+                    className="cursor-pointer"
+                    onMouseEnter={() => setActiveMonth(item)}
+                    onFocus={() => setActiveMonth(item)}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3 lg:grid-cols-6">
+          {dashboard.monthlyBars.map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              onMouseEnter={() => setActiveMonth(item)}
+              onFocus={() => setActiveMonth(item)}
+              onClick={() => setActiveMonth(item)}
+              className="rounded-full border px-3 py-2 text-left transition"
+              style={{
+                borderColor:
+                  activeMonth?.label === item.label
+                    ? "var(--accent-border)"
+                    : "var(--card-border)",
+                background:
+                  activeMonth?.label === item.label
+                    ? "var(--accent-soft)"
+                    : "rgba(255,255,255,0.03)",
+                color:
+                  activeMonth?.label === item.label
+                    ? "var(--text-primary)"
+                    : "var(--text-secondary)",
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeMonth ? (
+        <div
+          className="mt-6 rounded-[1.5rem] border p-4"
+          style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+        >
+          <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
+            Focus month
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-4">
+            <span className="text-2xl font-semibold tracking-tight">{activeMonth.label}</span>
+            <span className="text-sm text-[var(--text-secondary)]">
+              Income {formatAmount(activeMonth.income)}
+            </span>
+            <span className="text-sm text-[var(--text-secondary)]">
+              Expense {formatAmount(activeMonth.expense)}
+            </span>
+            <span className="text-sm text-[var(--text-secondary)]">
+              Net {formatAmount(activeMonth.income - activeMonth.expense)}
+            </span>
+            <span className="text-sm text-[var(--text-secondary)]">
+              Savings rate{" "}
+              {activeMonth.income > 0
+                ? Math.max(
+                    0,
+                    Math.round(
+                      ((activeMonth.income - activeMonth.expense) / activeMonth.income) * 100,
+                    ),
+                  )
+                : 0}
+              %
+            </span>
+          </div>
+        </div>
+      ) : null}
+    </Panel>
+  );
+}
+
+function SnapshotPanel({ dashboard }) {
+  return (
+    <Panel>
+      <h3 className="text-2xl font-semibold tracking-tight">Monthly snapshot</h3>
+      <p className="mt-2 text-sm text-[var(--text-secondary)]">
+        A quick summary of how efficiently this month is shaping up.
+      </p>
+
+      <div className="mt-8 space-y-5">
+        <SnapshotRow
+          label="Savings rate"
+          value={`${dashboard.savingsRate}%`}
+          accent="var(--success)"
+        />
+        <SnapshotRow
+          label="Expense ratio"
+          value={`${dashboard.expenseRatio}%`}
+          accent="var(--warning)"
+        />
+        <SnapshotRow
+          label="Largest category"
+          value={dashboard.highestCategory}
+          accent="var(--accent)"
+        />
+      </div>
+    </Panel>
+  );
+}
+
+function ProgressRow({ label, value, width }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-4 text-sm">
+        <span className="text-[var(--text-secondary)]">{label}</span>
+        <span className="font-semibold">{value}</span>
+      </div>
+      <div
+        className="mt-2 h-2.5 overflow-hidden rounded-full"
+        style={{ background: "var(--bg-soft)" }}
+      >
+        <div
+          className="h-full rounded-full"
+          style={{
+            width,
+            background:
+              "linear-gradient(90deg, var(--accent), rgba(20, 184, 166, 0.85))",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MetricChip({ label, value }) {
+  return (
+    <div
+      className="rounded-[1.5rem] border px-4 py-4"
+      style={{
+        background: "rgba(255, 255, 255, 0.04)",
+        borderColor: "var(--card-border)",
+      }}
+    >
+      <p className="text-xs uppercase tracking-[0.2em] text-[var(--text-secondary)]">
+        {label}
+      </p>
+      <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
+    </div>
+  );
+}
+
+function SnapshotRow({ label, value, accent }) {
+  return (
+    <div
+      className="flex items-center justify-between rounded-[1.4rem] border px-4 py-4"
+      style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+    >
+      <span className="text-sm text-[var(--text-secondary)]">{label}</span>
+      <span className="text-lg font-semibold" style={{ color: accent }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function LegendDot({ color, label }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function ChartStat({ label, value, detail }) {
+  return (
+    <div
+      className="rounded-[1.25rem] border px-4 py-4"
+      style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
+    >
+      <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-secondary)]">
+        {label}
+      </p>
+      <p className="mt-3 text-lg font-semibold tracking-tight">{value}</p>
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">{detail}</p>
+    </div>
+  );
+}
+
+function EmptyPanel({ title, detail, compact = false }) {
   return (
     <div
       className="rounded-[2rem] border p-7"
@@ -81,17 +1105,39 @@ function GlassCard({ title, value, subValue }) {
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
         boxShadow: "var(--shadow)",
-        backdropFilter: "blur(18px)",
       }}
     >
-      <p className="text-sm text-[var(--text-secondary)]">{title}</p>
-      <h3 className="mt-4 text-4xl font-semibold tracking-tight">{value}</h3>
-      <p className="mt-6 text-lg font-medium text-[var(--accent)]">{subValue}</p>
+      <div className={compact ? "" : "py-6"}>
+        <p className="text-xl font-semibold tracking-tight">{title}</p>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
+          {detail}
+        </p>
+      </div>
     </div>
   );
 }
 
-function Panel({ title, children, className = "" }) {
+function LoadingState() {
+  return (
+    <section
+      className="rounded-[2rem] border p-8"
+      style={{
+        background: "var(--card-bg)",
+        borderColor: "var(--card-border)",
+        boxShadow: "var(--shadow)",
+      }}
+    >
+      <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
+        Dashboard
+      </p>
+      <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+        Loading your dashboard...
+      </h2>
+    </section>
+  );
+}
+
+function Panel({ children, className = "" }) {
   return (
     <div
       className={`rounded-[2rem] border p-7 ${className}`}
@@ -102,24 +1148,170 @@ function Panel({ title, children, className = "" }) {
         backdropFilter: "blur(18px)",
       }}
     >
-      {title && <h3 className="text-2xl font-semibold">{title}</h3>}
       {children}
     </div>
   );
 }
 
-function ActionButton({ label, secondary = false }) {
-  return (
-    <button
-      className="rounded-2xl px-6 py-4 text-sm font-semibold transition"
-      style={{
-        background: secondary ? "var(--bg-elevated)" : "var(--accent)",
-        color: secondary ? "var(--text-primary)" : "#08111f",
-        border: secondary ? `1px solid var(--card-border)` : "none",
-        boxShadow: "var(--shadow)",
-      }}
-    >
-      {label}
-    </button>
+function buildDashboardAnalytics(transactions, spendingBreakdown) {
+  const expenseTransactions = transactions.filter((item) => item.type === "expense");
+  const monthlyMap = transactions.reduce((accumulator, item) => {
+    const monthKey = item.date.slice(0, 7);
+
+    if (!accumulator[monthKey]) {
+      accumulator[monthKey] = {
+        count: 0,
+        income: 0,
+        expense: 0,
+        categories: {},
+      };
+    }
+
+    accumulator[monthKey].count += 1;
+    accumulator[monthKey][item.type] += item.amount;
+
+    if (item.type === "expense") {
+      accumulator[monthKey].categories[item.category] =
+        (accumulator[monthKey].categories[item.category] || 0) + item.amount;
+    }
+
+    return accumulator;
+  }, {});
+
+  const sortedMonths = Object.keys(monthlyMap).sort();
+  const latestMonthKey = sortedMonths[sortedMonths.length - 1] || getCurrentMonthKey();
+  const visibleMonthKeys = getRecentMonthKeys(latestMonthKey, 5);
+  const topCategories = spendingBreakdown.slice(0, 5).map((item) => item.label);
+  const fallbackCategories = Array.from(
+    new Set(expenseTransactions.map((item) => item.category)),
+  ).slice(0, 5);
+  const visibleCategories = topCategories.length > 0 ? topCategories : fallbackCategories;
+
+  const monthlyActivity = visibleMonthKeys.map((monthKey) => {
+    const month = monthlyMap[monthKey] || {
+      count: 0,
+      income: 0,
+      expense: 0,
+      categories: {},
+    };
+
+    return {
+      fullLabel: monthKey,
+      count: month.count,
+      net: month.income - month.expense,
+      value: month.income - month.expense,
+    };
+  }).map((item) => ({
+    ...item,
+    label: formatMonthShort(item.fullLabel),
+  }));
+
+  const categoryTimeline = visibleMonthKeys.map((monthKey) => {
+    const month = monthlyMap[monthKey] || {
+      count: 0,
+      income: 0,
+      expense: 0,
+      categories: {},
+    };
+    const segments = visibleCategories.map((category) => ({
+      label: category,
+      amount: month.categories[category] || 0,
+    }));
+    const total = segments.reduce((sum, item) => sum + item.amount, 0);
+    const topCategory =
+      segments.sort((first, second) => second.amount - first.amount)[0]?.label || "No spend";
+
+    return {
+      label: formatMonthShort(monthKey),
+      total,
+      segments: visibleCategories.map((category) => ({
+        label: category,
+        amount: month.categories[category] || 0,
+      })),
+      topCategory,
+    };
+  });
+
+  const categoryTransactionStats = expenseTransactions.reduce((accumulator, item) => {
+    if (!accumulator[item.category]) {
+      accumulator[item.category] = { amount: 0, count: 0 };
+    }
+
+    accumulator[item.category].amount += item.amount;
+    accumulator[item.category].count += 1;
+    return accumulator;
+  }, {});
+
+  const bubbleData = spendingBreakdown.slice(0, 5).map((item) => {
+    const stats = categoryTransactionStats[item.label] || { amount: item.amount, count: 1 };
+    const averageAmount = stats.count > 0 ? Math.round(stats.amount / stats.count) : 0;
+
+    return {
+      ...item,
+      transactionCount: stats.count,
+      averageAmount,
+      radius: 7 + Math.min(10, item.percent * 0.22),
+      shortLabel: item.label.slice(0, 3).toUpperCase(),
+    };
+  });
+
+  return {
+    monthlyActivity,
+    categoryTimeline,
+    bubbleData,
+    topCategories: visibleCategories,
+  };
+}
+
+function formatMonthShort(monthKey) {
+  const [, month] = monthKey.split("-");
+  const labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return labels[Number(month) - 1] || monthKey;
+}
+
+function getRecentMonthKeys(latestMonthKey, count) {
+  const [yearText, monthText] = latestMonthKey.split("-");
+  const keys = [];
+  let year = Number(yearText);
+  let month = Number(monthText);
+
+  for (let index = count - 1; index >= 0; index -= 1) {
+    let nextYear = year;
+    let nextMonth = month - index;
+
+    while (nextMonth <= 0) {
+      nextMonth += 12;
+      nextYear -= 1;
+    }
+
+    keys.push(`${nextYear}-${String(nextMonth).padStart(2, "0")}`);
+  }
+
+  return keys;
+}
+
+function getCurrentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function calculateTrendLine(values) {
+  if (values.length <= 1) {
+    return values;
+  }
+
+  const meanX = (values.length - 1) / 2;
+  const meanY = values.reduce((sum, value) => sum + value, 0) / values.length;
+  const numerator = values.reduce(
+    (sum, value, index) => sum + (index - meanX) * (value - meanY),
+    0,
   );
+  const denominator = values.reduce(
+    (sum, _value, index) => sum + (index - meanX) ** 2,
+    0,
+  );
+  const slope = denominator === 0 ? 0 : numerator / denominator;
+  const intercept = meanY - slope * meanX;
+
+  return values.map((_value, index) => intercept + slope * index);
 }

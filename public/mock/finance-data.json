@@ -1,0 +1,76 @@
+{
+  "dashboard": {
+    "balanceTrend": [
+      { "label": "Nov", "value": 218000 },
+      { "label": "Dec", "value": 229400 },
+      { "label": "Jan", "value": 241800 },
+      { "label": "Feb", "value": 256900 },
+      { "label": "Mar", "value": 271300 },
+      { "label": "Apr", "value": 286700 }
+    ],
+    "goals": {
+      "budgetUsed": 71,
+      "savingsGoal": 74,
+      "recurringBills": 58
+    },
+    "recommendation": "April spending stayed steady, so moving Rs 12,000 into emergency savings would still leave room for next month's rent and bills.",
+    "forecastRunway": "6.8 months"
+  },
+  "transactions": [
+    { "id": 81, "merchant": "Salary Credit", "date": "2025-12-01", "amount": 98000, "category": "Salary", "type": "income" },
+    { "id": 83, "merchant": "Flat Rent", "date": "2025-12-03", "amount": 24000, "category": "Rent", "type": "expense" },
+    { "id": 84, "merchant": "Reliance Smart", "date": "2025-12-06", "amount": 4680, "category": "Groceries", "type": "expense" },
+    { "id": 85, "merchant": "BESCOM Electricity", "date": "2025-12-09", "amount": 1960, "category": "Utilities", "type": "expense" },
+    { "id": 86, "merchant": "PVR Cinemas", "date": "2025-12-12", "amount": 1240, "category": "Entertainment", "type": "expense" },
+    { "id": 87, "merchant": "Uber Auto", "date": "2025-12-16", "amount": 540, "category": "Transport", "type": "expense" },
+    { "id": 88, "merchant": "Amazon India", "date": "2025-12-18", "amount": 2890, "category": "Shopping", "type": "expense" },
+    { "id": 82, "merchant": "Performance Bonus", "date": "2025-12-20", "amount": 18000, "category": "Bonus", "type": "income" },
+    { "id": 121, "merchant": "Starbucks", "date": "2025-12-22", "amount": 420, "category": "Dining", "type": "expense" },
+    { "id": 122, "merchant": "Apollo Pharmacy", "date": "2025-12-27", "amount": 640, "category": "Healthcare", "type": "expense" },
+
+    { "id": 89, "merchant": "Salary Credit", "date": "2026-01-01", "amount": 99500, "category": "Salary", "type": "income" },
+    { "id": 91, "merchant": "Flat Rent", "date": "2026-01-03", "amount": 24000, "category": "Rent", "type": "expense" },
+    { "id": 92, "merchant": "BigBasket", "date": "2026-01-08", "amount": 5120, "category": "Groceries", "type": "expense" },
+    { "id": 93, "merchant": "Airtel Fiber", "date": "2026-01-10", "amount": 999, "category": "Utilities", "type": "expense" },
+    { "id": 94, "merchant": "Zomato", "date": "2026-01-14", "amount": 890, "category": "Dining", "type": "expense" },
+    { "id": 95, "merchant": "Apollo Pharmacy", "date": "2026-01-20", "amount": 780, "category": "Healthcare", "type": "expense" },
+    { "id": 96, "merchant": "IRCTC", "date": "2026-01-24", "amount": 2860, "category": "Travel", "type": "expense" },
+    { "id": 90, "merchant": "Interest Credit", "date": "2026-01-29", "amount": 1250, "category": "Investments", "type": "income" },
+
+    { "id": 97, "merchant": "Salary Credit", "date": "2026-02-01", "amount": 100500, "category": "Salary", "type": "income" },
+    { "id": 99, "merchant": "Flat Rent", "date": "2026-02-03", "amount": 24000, "category": "Rent", "type": "expense" },
+    { "id": 100, "merchant": "DMart", "date": "2026-02-07", "amount": 5580, "category": "Groceries", "type": "expense" },
+    { "id": 117, "merchant": "BESCOM Electricity", "date": "2026-02-09", "amount": 2140, "category": "Utilities", "type": "expense" },
+    { "id": 118, "merchant": "Swiggy", "date": "2026-02-13", "amount": 1160, "category": "Dining", "type": "expense" },
+    { "id": 98, "merchant": "Weekend Tutoring", "date": "2026-02-16", "amount": 8500, "category": "Freelance", "type": "income" },
+    { "id": 119, "merchant": "Namma Metro", "date": "2026-02-17", "amount": 720, "category": "Transport", "type": "expense" },
+    { "id": 120, "merchant": "Max Fashion", "date": "2026-02-21", "amount": 1980, "category": "Shopping", "type": "expense" },
+    { "id": 123, "merchant": "BookMyShow", "date": "2026-02-23", "amount": 560, "category": "Entertainment", "type": "expense" },
+    { "id": 124, "merchant": "Milk Basket", "date": "2026-02-26", "amount": 390, "category": "Groceries", "type": "expense" },
+
+    { "id": 113, "merchant": "Salary Credit", "date": "2026-03-01", "amount": 101000, "category": "Salary", "type": "income" },
+    { "id": 114, "merchant": "Flat Rent", "date": "2026-03-03", "amount": 24000, "category": "Rent", "type": "expense" },
+    { "id": 116, "merchant": "BESCOM Electricity", "date": "2026-03-05", "amount": 2050, "category": "Utilities", "type": "expense" },
+    { "id": 115, "merchant": "DMart", "date": "2026-03-08", "amount": 5890, "category": "Groceries", "type": "expense" },
+    { "id": 125, "merchant": "Uber Auto", "date": "2026-03-11", "amount": 460, "category": "Transport", "type": "expense" },
+    { "id": 126, "merchant": "Cafe Coffee Day", "date": "2026-03-14", "amount": 350, "category": "Dining", "type": "expense" },
+    { "id": 112, "merchant": "Swiggy", "date": "2026-03-18", "amount": 1280, "category": "Dining", "type": "expense" },
+    { "id": 111, "merchant": "IRCTC", "date": "2026-03-22", "amount": 3240, "category": "Travel", "type": "expense" },
+    { "id": 110, "merchant": "Apollo Pharmacy", "date": "2026-03-25", "amount": 1340, "category": "Healthcare", "type": "expense" },
+    { "id": 109, "merchant": "Weekend Tutoring", "date": "2026-03-27", "amount": 9000, "category": "Freelance", "type": "income" },
+    { "id": 127, "merchant": "Amazon India", "date": "2026-03-28", "amount": 1740, "category": "Shopping", "type": "expense" },
+    { "id": 128, "merchant": "Petrol Pump", "date": "2026-03-30", "amount": 1200, "category": "Transport", "type": "expense" },
+
+    { "id": 101, "merchant": "Salary Credit", "date": "2026-04-01", "amount": 103000, "category": "Salary", "type": "income" },
+    { "id": 102, "merchant": "Flat Rent", "date": "2026-04-02", "amount": 24000, "category": "Rent", "type": "expense" },
+    { "id": 103, "merchant": "BigBasket", "date": "2026-04-03", "amount": 5420, "category": "Groceries", "type": "expense" },
+    { "id": 104, "merchant": "Zomato", "date": "2026-04-04", "amount": 940, "category": "Dining", "type": "expense" },
+    { "id": 105, "merchant": "Ola", "date": "2026-04-05", "amount": 610, "category": "Transport", "type": "expense" },
+    { "id": 106, "merchant": "Tata Power", "date": "2026-04-06", "amount": 2280, "category": "Utilities", "type": "expense" },
+    { "id": 107, "merchant": "Tax Refund", "date": "2026-04-08", "amount": 4200, "category": "Refund", "type": "income" },
+    { "id": 108, "merchant": "Airtel Fiber", "date": "2026-04-09", "amount": 999, "category": "Utilities", "type": "expense" }
+  ],
+  "insights": {
+    "observationHint": "Dining, shopping, and short leisure trips are the easiest categories to trim when monthly cash flow feels tight."
+  }
+}

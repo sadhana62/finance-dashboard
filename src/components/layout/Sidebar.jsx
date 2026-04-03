@@ -1,12 +1,12 @@
 import { LayoutDashboard, ReceiptText, Sparkles } from "lucide-react";
 
-const navItems = [
-  { label: "Dashboard", icon: LayoutDashboard, active: false },
-  { label: "Transactions", icon: ReceiptText, active: false },
-  { label: "Insights", icon: Sparkles, active: true },
+export const navItems = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "transactions", label: "Transactions", icon: ReceiptText },
+  { id: "insights", label: "Insights", icon: Sparkles },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ currentPage, setCurrentPage }) {
   return (
     <aside
       className="hidden border-r px-4 py-6 lg:flex lg:flex-col"
@@ -18,20 +18,24 @@ export default function Sidebar() {
     >
       <div>
         <h1 className="text-3xl font-semibold tracking-tight text-[var(--accent)]">
-          Ethereal Ledger
+          Transaction
+          Ledger
         </h1>
-        <p className="mt-1 text-sm text-[var(--text-secondary)]">
+        {/* <p className="mt-1 text-sm text-[var(--text-secondary)]">
           Wealth Intelligence
-        </p>
+        </p> */}
       </div>
 
       <nav className="mt-10 space-y-2">
-        {navItems.map(({ label, icon, active }) => {
+        {navItems.map(({ id, label, icon }) => {
           const ItemIcon = icon;
+          const active = currentPage === id;
 
           return (
             <button
               key={label}
+              type="button"
+              onClick={() => setCurrentPage(id)}
               className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-all ${
                 active ? "shadow-sm" : ""
               }`}
@@ -48,20 +52,7 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="mt-auto rounded-2xl border p-4"
-        style={{
-          background: "var(--card-bg)",
-          borderColor: "var(--card-border)",
-          boxShadow: "var(--shadow)",
-        }}
-      >
-        <div className="text-sm font-medium text-[var(--text-primary)]">
-          EtherealOrg
-        </div>
-        <div className="text-xs text-[var(--text-secondary)]">
-          Enterprise Plan
-        </div>
-      </div>
+     
     </aside>
   );
 }
