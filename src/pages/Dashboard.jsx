@@ -91,10 +91,7 @@ export default function Dashboard() {
 
       <div className="grid gap-6">
         <TrendPanel analytics={analytics} />
-        <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <BreakdownPanel dashboard={dashboard} analytics={analytics} />
-          <BubbleInsightsPanel analytics={analytics} />
-        </div>
+        <BreakdownPanel dashboard={dashboard} analytics={analytics} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
@@ -654,152 +651,6 @@ function BreakdownPanel({ dashboard, analytics }) {
   );
 }
 
-function BubbleInsightsPanel({ analytics }) {
-  const [activeBubble, setActiveBubble] = useState(analytics.bubbleData[0] || null);
-  const maxAverage = Math.max(...analytics.bubbleData.map((item) => item.averageAmount), 1);
-
-  return (
-    <Panel>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h3 className="text-2xl font-semibold tracking-tight">Category insights</h3>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Bigger bubbles show heavier spend, while the position compares category share and average transaction size.
-          </p>
-        </div>
-      </div>
-
-      {analytics.bubbleData.length > 0 ? (
-        <>
-          <div
-            className="mt-8 rounded-[1.75rem] border p-4"
-            style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
-          >
-            <svg viewBox="0 0 100 100" className="h-80 w-full">
-              {[20, 40, 60, 80].map((value) => (
-                <line
-                  key={`h-${value}`}
-                  x1="10"
-                  x2="92"
-                  y1={value}
-                  y2={value}
-                  stroke="var(--card-border)"
-                  strokeDasharray="3 4"
-                />
-              ))}
-              {[25, 50, 75].map((value) => (
-                <line
-                  key={`v-${value}`}
-                  x1={value}
-                  x2={value}
-                  y1="10"
-                  y2="92"
-                  stroke="var(--card-border)"
-                  strokeDasharray="3 4"
-                />
-              ))}
-
-              {analytics.bubbleData.map((item, index) => {
-                const isActive = activeBubble?.label === item.label;
-                const x = 14 + item.percent * 0.72;
-                const y = 90 - (item.averageAmount / maxAverage) * 68;
-
-                return (
-                  <g key={item.label}>
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r={item.radius}
-                      fill={ringColors[index % ringColors.length]}
-                      fillOpacity={isActive ? "0.88" : "0.68"}
-                      stroke="rgba(255,255,255,0.8)"
-                      strokeWidth={isActive ? "1.5" : "0.8"}
-                      className="cursor-pointer"
-                      onMouseEnter={() => setActiveBubble(item)}
-                      onFocus={() => setActiveBubble(item)}
-                    />
-                    <text
-                      x={x}
-                      y={y}
-                      textAnchor="middle"
-                      dominantBaseline="middle"
-                      fill="#fff"
-                      fontSize={isActive ? "4" : "3.2"}
-                      fontWeight="700"
-                    >
-                      {item.shortLabel}
-                    </text>
-                  </g>
-                );
-              })}
-
-              <text x="10" y="98" fill="var(--text-secondary)" fontSize="3.2">
-                Lower share
-              </text>
-              <text x="78" y="98" fill="var(--text-secondary)" fontSize="3.2">
-                Higher share
-              </text>
-              <text
-                x="3"
-                y="16"
-                fill="var(--text-secondary)"
-                fontSize="3.2"
-                transform="rotate(-90 3 16)"
-              >
-                Higher avg spend
-              </text>
-            </svg>
-          </div>
-
-          <div className="mt-6 grid gap-3">
-            {analytics.bubbleData.map((item, index) => {
-              const isActive = activeBubble?.label === item.label;
-
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  onMouseEnter={() => setActiveBubble(item)}
-                  onFocus={() => setActiveBubble(item)}
-                  onClick={() => setActiveBubble(item)}
-                  className="flex items-center justify-between gap-4 rounded-[1.3rem] border px-4 py-4 text-left transition"
-                  style={{
-                    borderColor: isActive ? "var(--accent-border)" : "var(--card-border)",
-                    background: isActive ? "var(--accent-soft)" : "rgba(255,255,255,0.03)",
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ background: ringColors[index % ringColors.length] }}
-                    />
-                    <div>
-                      <p className="font-medium">{item.label}</p>
-                      <p className="text-sm text-[var(--text-secondary)]">
-                        {item.percent}% share | {item.transactionCount} transactions
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right text-sm text-[var(--text-secondary)]">
-                    <p>{formatAmount(item.amount)}</p>
-                    <p>Avg {formatAmount(item.averageAmount)}</p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </>
-      ) : (
-        <EmptyPanel
-          title="No category statistics yet"
-          detail="Add expense transactions to unlock the bubble comparison."
-          compact
-        />
-      )}
-    </Panel>
-  );
-}
-
 function CashFlowPanel({ dashboard }) {
   const [activeMonth, setActiveMonth] = useState(
     dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null,
@@ -813,8 +664,10 @@ function CashFlowPanel({ dashboard }) {
       ? chartWidth / (dashboard.monthlyBars.length - 1)
       : 0;
   const values = dashboard.monthlyBars.flatMap((item) => [item.income, item.expense]);
+  const totalMovements = dashboard.monthlyBars.map((item) => item.income + item.expense);
   const min = values.length > 0 ? Math.min(...values) : 0;
   const max = values.length > 0 ? Math.max(...values) : 0;
+  const maxTotalMovement = totalMovements.length > 0 ? Math.max(...totalMovements) : 1;
   const spread = max - min || 1;
   const axisLabels = [max, max - spread / 2, min].map((value) => Math.round(value));
 
@@ -834,12 +687,13 @@ function CashFlowPanel({ dashboard }) {
         <div>
           <h3 className="text-2xl font-semibold tracking-tight">Income vs expenses</h3>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Compare how inflows and outflows have changed across recent months.
+            Compare how inflows and outflows have changed across recent months, with larger bubbles highlighting busier months.
           </p>
         </div>
         <div className="flex items-center gap-4 text-xs text-[var(--text-secondary)]">
           <LegendDot color="rgba(37, 99, 235, 0.9)" label="Income" />
           <LegendDot color="rgba(251, 113, 133, 0.9)" label="Expenses" />
+          <LegendDot color="rgba(91, 140, 255, 0.3)" label="Month volume" />
         </div>
       </div>
 
@@ -868,6 +722,28 @@ function CashFlowPanel({ dashboard }) {
                   y2={y}
                   stroke="var(--card-border)"
                   strokeDasharray="3 4"
+                />
+              );
+            })}
+
+            {dashboard.monthlyBars.map((item, index) => {
+              const x = xOffset + index * step;
+              const incomeY = getY(item.income);
+              const expenseY = getY(item.expense);
+              const bubbleY = (incomeY + expenseY) / 2;
+              const bubbleRadius =
+                6 + ((item.income + item.expense) / Math.max(maxTotalMovement, 1)) * 10;
+              const isActive = activeMonth?.label === item.label;
+
+              return (
+                <circle
+                  key={`${item.label}-bubble`}
+                  cx={x}
+                  cy={bubbleY}
+                  r={bubbleRadius}
+                  fill="rgba(91, 140, 255, 0.16)"
+                  stroke="rgba(91, 140, 255, 0.28)"
+                  strokeWidth={isActive ? "1.6" : "1"}
                 />
               );
             })}
@@ -969,6 +845,9 @@ function CashFlowPanel({ dashboard }) {
             </span>
             <span className="text-sm text-[var(--text-secondary)]">
               Net {formatAmount(activeMonth.income - activeMonth.expense)}
+            </span>
+            <span className="text-sm text-[var(--text-secondary)]">
+              Volume {formatAmount(activeMonth.income + activeMonth.expense)}
             </span>
             <span className="text-sm text-[var(--text-secondary)]">
               Savings rate{" "}
@@ -1232,33 +1111,9 @@ function buildDashboardAnalytics(transactions, spendingBreakdown) {
     };
   });
 
-  const categoryTransactionStats = expenseTransactions.reduce((accumulator, item) => {
-    if (!accumulator[item.category]) {
-      accumulator[item.category] = { amount: 0, count: 0 };
-    }
-
-    accumulator[item.category].amount += item.amount;
-    accumulator[item.category].count += 1;
-    return accumulator;
-  }, {});
-
-  const bubbleData = spendingBreakdown.slice(0, 5).map((item) => {
-    const stats = categoryTransactionStats[item.label] || { amount: item.amount, count: 1 };
-    const averageAmount = stats.count > 0 ? Math.round(stats.amount / stats.count) : 0;
-
-    return {
-      ...item,
-      transactionCount: stats.count,
-      averageAmount,
-      radius: 7 + Math.min(10, item.percent * 0.22),
-      shortLabel: item.label.slice(0, 3).toUpperCase(),
-    };
-  });
-
   return {
     monthlyActivity,
     categoryTimeline,
-    bubbleData,
     topCategories: visibleCategories,
   };
 }
