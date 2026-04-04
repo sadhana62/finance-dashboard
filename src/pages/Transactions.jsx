@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, ArrowDownUp, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import Tooltip from "../components/ui/Tooltip";
@@ -52,6 +52,11 @@ export default function Transactions() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(emptyForm);
   const [pendingDelete, setPendingDelete] = useState(null);
+  const [pendingAdd, setPendingAdd] = useState(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   function handleFormChange(event) {
     const { name, value } = event.target;
@@ -72,22 +77,33 @@ export default function Transactions() {
       return;
     }
 
+    setPendingAdd({
+      merchant,
+      date: form.date,
+      amount,
+      category,
+      type: form.type,
+    });
+  }
+
+  function handleAddConfirm() {
+    if (!pendingAdd) return;
+
     dispatch(
-      addTransaction({
-        merchant,
-        date: form.date,
-        amount,
-        category,
-        type: form.type,
-      }),
+      addTransaction(pendingAdd),
     );
     dispatch(resetFilters());
 
     setForm({
       ...emptyForm,
-      date: form.date,
+      date: pendingAdd.date,
     });
     setShowAddForm(false);
+    setPendingAdd(null);
+  }
+
+  function handleAddCancel() {
+    setPendingAdd(null);
   }
 
   function handleEditStart(item) {
@@ -366,7 +382,9 @@ export default function Transactions() {
         ) : (
           <>
             <div
-              className="mt-6 hidden grid-cols-[1.2fr_1fr_1fr_0.9fr_0.8fr_0.9fr] gap-4 border-b pb-4 text-sm font-medium text-[var(--text-secondary)] md:grid"
+              className={`mt-6 hidden gap-4 border-b pb-4 text-sm font-medium text-[var(--text-secondary)] md:grid ${
+                role === "admin" ? "grid-cols-[1.2fr_1fr_1fr_0.9fr_0.8fr_0.9fr]" : "grid-cols-[1.2fr_1fr_1fr_0.9fr_0.8fr]"
+              }`}
               style={{ borderColor: "var(--card-border)" }}
             >
               <span>Merchant</span>
@@ -374,7 +392,7 @@ export default function Transactions() {
               <span>Category</span>
               <span>Type</span>
               <span className="text-right">Amount</span>
-              <span className="text-right">Actions</span>
+              {role === "admin" ? <span className="text-right">Actions</span> : null}
             </div>
 
             <div className="mt-4 space-y-3">
@@ -409,6 +427,11 @@ export default function Transactions() {
         onCancel={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
       />
+      <AddConfirmationDialog
+        transaction={pendingAdd}
+        onCancel={handleAddCancel}
+        onConfirm={handleAddConfirm}
+      />
     </section>
   );
 }
@@ -429,7 +452,7 @@ function TransactionRow({
   if (isEditing) {
     return (
       <div
-        className="rounded-[1.5rem] border px-4 py-4 md:px-5"
+        className="rounded-[1.5rem] border px-4 py-4 md:px-5 transition-transform duration-300 hover:-translate-y-1"
         style={{
           borderColor: "var(--accent-border)",
           background: "rgba(255,255,255,0.04)",
@@ -521,7 +544,7 @@ function TransactionRow({
 
   return (
     <div
-      className="rounded-[1.5rem] border px-4 py-4 md:px-5"
+      className="rounded-[1.5rem] border px-4 py-4 md:px-5 transition-transform duration-300 hover:-translate-y-1"
       style={{
         borderColor: "var(--card-border)",
         background: "rgba(255,255,255,0.03)",
@@ -565,7 +588,11 @@ function TransactionRow({
         </div>
       </div>
 
-      <div className="hidden grid-cols-[1.2fr_1fr_1fr_0.9fr_0.8fr_0.9fr] items-center gap-4 md:grid">
+      <div
+        className={`hidden items-center gap-4 md:grid ${
+          role === "admin" ? "grid-cols-[1.2fr_1fr_1fr_0.9fr_0.8fr_0.9fr]" : "grid-cols-[1.2fr_1fr_1fr_0.9fr_0.8fr]"
+        }`}
+      >
         <span className="font-medium">{item.merchant}</span>
         <span className="text-[var(--text-secondary)]">
           {formatDisplayDate(item.date)}
@@ -577,23 +604,21 @@ function TransactionRow({
         <span className="text-right font-semibold" style={{ color: amountColor }}>
           {formatAmountByType(item.amount, item.type)}
         </span>
-        <div className="flex justify-end gap-2">
-          {role === "admin" ? (
-            <>
-              <AdminIconButton
-                label="Edit transaction"
-                icon={Pencil}
-                onClick={() => onEditStart(item)}
-              />
-              <AdminIconButton
-                label="Delete transaction"
-                icon={Trash2}
-                tone="danger"
-                onClick={() => onDelete(item.id)}
-              />
-            </>
-          ) : null}
-        </div>
+        {role === "admin" ? (
+          <div className="flex justify-end gap-2">
+            <AdminIconButton
+              label="Edit transaction"
+              icon={Pencil}
+              onClick={() => onEditStart(item)}
+            />
+            <AdminIconButton
+              label="Delete transaction"
+              icon={Trash2}
+              tone="danger"
+              onClick={() => onDelete(item.id)}
+            />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -625,7 +650,7 @@ function AdminIconButton({ label, icon, onClick, tone = "default" }) {
 function SummaryTile({ label, value }) {
   return (
     <div
-      className="rounded-[1.75rem] border p-5"
+      className="rounded-[1.75rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
@@ -666,7 +691,7 @@ function InfoPill({ children, accent = false }) {
 function EmptyState({ title, detail, compact = false }) {
   return (
     <div
-      className={`rounded-[1.5rem] border px-5 text-center ${compact ? "py-8" : "mt-6 py-10"}`}
+      className={`rounded-[1.5rem] border px-5 text-center transition-transform duration-300 hover:-translate-y-1 ${compact ? "py-8" : "mt-6 py-10"}`}
       style={{
         borderColor: "var(--card-border)",
         background: "rgba(255,255,255,0.03)",
@@ -681,7 +706,7 @@ function EmptyState({ title, detail, compact = false }) {
 function LoadingState({ title }) {
   return (
     <section
-      className="rounded-[2rem] border p-8"
+      className="rounded-[2rem] border p-8 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
@@ -808,10 +833,123 @@ function DeleteConfirmationDialog({ transaction, onCancel, onConfirm }) {
   );
 }
 
+function AddConfirmationDialog({ transaction, onCancel, onConfirm }) {
+  if (!transaction) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-20 flex items-center justify-center p-4">
+      <button
+        type="button"
+        aria-label="Close add confirmation"
+        className="absolute inset-0"
+        style={{ background: "rgba(5, 11, 22, 0.72)", backdropFilter: "blur(12px)" }}
+        onClick={onCancel}
+      />
+
+      <div
+        className="relative w-full max-w-lg rounded-[2rem] border p-6 md:p-7"
+        style={{
+          background: "linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(11, 18, 32, 0.98))",
+          borderColor: "rgba(20, 184, 166, 0.2)",
+          boxShadow: "0 24px 70px rgba(0, 0, 0, 0.45)",
+        }}
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className="flex h-14 w-14 items-center justify-center rounded-[1.4rem]"
+            style={{
+              background: "rgba(20, 184, 166, 0.14)",
+              color: "var(--accent)",
+              border: "1px solid rgba(20, 184, 166, 0.24)",
+            }}
+          >
+            <Plus size={24} />
+          </div>
+
+          <div className="flex-1">
+            <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
+              Add transaction
+            </p>
+            <h3 className="mt-3 text-2xl font-semibold tracking-tight">
+              Confirm new record?
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+              You are about to add a new
+              <span className="font-semibold text-[var(--text-primary)]">
+                {` ${transaction.type}`}
+              </span>
+              {` for `}
+              <span className="font-semibold text-[var(--text-primary)]">
+                {transaction.merchant}
+              </span>
+              .
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="mt-6 rounded-[1.5rem] border p-4"
+          style={{
+            borderColor: "var(--card-border)",
+            background: "rgba(255,255,255,0.04)",
+          }}
+        >
+          <div className="flex items-center justify-between gap-4 text-sm">
+            <span className="text-[var(--text-secondary)]">Category</span>
+            <span className="font-medium text-[var(--text-primary)]">
+              {transaction.category}
+            </span>
+          </div>
+          <div className="mt-3 flex items-center justify-between gap-4 text-sm">
+            <span className="text-[var(--text-secondary)]">Amount</span>
+            <span
+              className="font-semibold"
+              style={{
+                color: transaction.type === "income" ? "var(--success)" : "var(--danger)",
+              }}
+            >
+              {formatAmountByType(transaction.amount, transaction.type)}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-2xl border px-5 py-3 text-sm font-semibold transition"
+            style={{
+              borderColor: "var(--card-border)",
+              color: "var(--text-secondary)",
+              background: "rgba(255,255,255,0.03)",
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="rounded-2xl px-5 py-3 text-sm font-semibold transition"
+            style={{
+              background: "var(--accent)",
+              color: "#08111f",
+              boxShadow: "var(--shadow)",
+            }}
+          >
+            Confirm Addition
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Panel({ children }) {
   return (
     <div
-      className="rounded-[2rem] border p-6"
+      className="rounded-[2rem] border p-6 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",

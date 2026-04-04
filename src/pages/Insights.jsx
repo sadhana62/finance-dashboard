@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BarChart3,
   CalendarClock,
@@ -5,6 +6,7 @@ import {
   ReceiptText,
   TrendingUp,
   WalletCards,
+  PieChart,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import {
@@ -18,6 +20,10 @@ export default function Insights() {
   const status = useSelector(selectFinanceStatus);
   const transactions = useSelector(selectTransactions);
   const insights = useSelector(selectInsightsData);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (status === "loading" && transactions.length === 0) {
     return <LoadingState />;
@@ -39,7 +45,7 @@ export default function Insights() {
     <section className="space-y-6">
       <PageIntro />
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         <InsightCard
           icon={WalletCards}
           eyebrow="Highest spending category"
@@ -57,6 +63,12 @@ export default function Insights() {
           eyebrow="Useful observation"
           title={insights.observation.title}
           detail={insights.observation.detail}
+        />
+        <InsightCard
+          icon={PieChart}
+          eyebrow="Spending Concentration"
+          title={insights.categoryCorrelation.title}
+          detail={insights.categoryCorrelation.detail}
         />
       </div>
 
@@ -229,7 +241,7 @@ function InsightCard({ icon: Icon, eyebrow, title, detail }) {
 function InsightStrip({ label, title, detail }) {
   return (
     <div
-      className="rounded-[1.6rem] border p-5"
+      className="rounded-[1.6rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <p className="text-xs uppercase tracking-[0.22em] text-[var(--accent)]">{label}</p>
@@ -242,7 +254,7 @@ function InsightStrip({ label, title, detail }) {
 function TipCard({ title, detail }) {
   return (
     <div
-      className="rounded-[1.5rem] border p-5"
+      className="rounded-[1.5rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <p className="text-lg font-semibold tracking-tight">{title}</p>
@@ -267,7 +279,7 @@ function EmptyState({ title, detail, compact = false }) {
 function LoadingState() {
   return (
     <section
-      className="rounded-[2rem] border p-8"
+      className="rounded-[2rem] border p-8 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
@@ -287,7 +299,7 @@ function LoadingState() {
 function Panel({ children }) {
   return (
     <div
-      className="rounded-[2rem] border p-6"
+      className="rounded-[2rem] border p-6 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",

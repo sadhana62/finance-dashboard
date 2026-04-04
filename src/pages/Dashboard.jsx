@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowDownRight, ArrowUpRight, PiggyBank, Wallet } from "lucide-react";
 import { useSelector } from "react-redux";
 import {
@@ -22,6 +22,10 @@ export default function Dashboard() {
   const transactions = useSelector(selectTransactions);
   const dashboard = useSelector(selectDashboardData);
   const analytics = buildDashboardAnalytics(transactions, dashboard.spendingBreakdown);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   if (status === "loading" && transactions.length === 0) {
     return <LoadingState />;
@@ -195,7 +199,7 @@ function HighlightsPanel({ dashboard }) {
       </div>
 
       <div
-        className="mt-8 rounded-[1.6rem] border p-5"
+        className="mt-8 rounded-[1.6rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
         style={{
           borderColor: "var(--card-border)",
           background:
@@ -239,9 +243,11 @@ function SummaryCard({ title, value, detail, tone, icon }) {
 }
 
 function TrendPanel({ analytics }) {
-  const [activePoint, setActivePoint] = useState(
-    analytics.monthlyActivity[analytics.monthlyActivity.length - 1] || null,
+  const [activePointLabel, setActivePointLabel] = useState(
+    analytics.monthlyActivity[analytics.monthlyActivity.length - 1]?.label || null,
   );
+  const activePoint = analytics.monthlyActivity.find((item) => item.label === activePointLabel) ||
+    analytics.monthlyActivity[analytics.monthlyActivity.length - 1] || null;
   const chartHeight = 220;
   const width = 760;
   const chartWidth = 700;
@@ -269,19 +275,11 @@ function TrendPanel({ analytics }) {
     null,
   );
   const axisLabels = Array.from(new Set([max, max - spread / 2, min].map((value) => Math.round(value))));
-  const trendValues = calculateTrendLine(values);
 
   const points = analytics.monthlyActivity
     .map((item, index) => {
       const x = xOffset + index * step;
       const y = chartHeight - ((item.count - min) / spread) * (chartHeight - 24) - 12;
-      return `${x},${y}`;
-    })
-    .join(" ");
-  const trendPoints = trendValues
-    .map((value, index) => {
-      const x = xOffset + index * step;
-      const y = chartHeight - ((value - min) / spread) * (chartHeight - 24) - 12;
       return `${x},${y}`;
     })
     .join(" ");
@@ -314,7 +312,7 @@ function TrendPanel({ analytics }) {
         </div>
       </div>
 
-      <div className="mt-8 rounded-[1.75rem] border p-4" style={{ borderColor: "var(--card-border)" }}>
+      <div className="mt-8 rounded-[1.75rem] border p-4 transition-transform duration-300 hover:-translate-y-1" style={{ borderColor: "var(--card-border)" }}>
         <div className="mb-5 grid gap-3 md:grid-cols-3">
           <ChartStat
             label="Selected month"
@@ -362,36 +360,12 @@ function TrendPanel({ analytics }) {
             </linearGradient>
           </defs>
 
-          {[0, 1, 2, 3].map((line) => {
-            const y = 20 + line * 50;
-            return (
-              <line
-                key={line}
-                x1={xOffset}
-                x2={xOffset + chartWidth}
-                y1={y}
-                y2={y}
-                stroke="var(--card-border)"
-                strokeDasharray="3 4"
-              />
-            );
-          })}
-
           <polygon points={areaPoints} fill="url(#trendArea)" />
           <polyline
             points={points}
             fill="none"
             stroke="var(--accent)"
             strokeWidth="2.5"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-          <polyline
-            points={trendPoints}
-            fill="none"
-            stroke="rgba(20, 184, 166, 0.95)"
-            strokeWidth="1.8"
-            strokeDasharray="4 4"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
@@ -417,8 +391,8 @@ function TrendPanel({ analytics }) {
                   stroke="var(--accent)"
                   strokeWidth={isActive ? "2.2" : "1.5"}
                   className="cursor-pointer"
-                  onMouseEnter={() => setActivePoint(item)}
-                  onFocus={() => setActivePoint(item)}
+                  onMouseEnter={() => setActivePointLabel(item.label)}
+                  onFocus={() => setActivePointLabel(item.label)}
                 />
               </g>
             );
@@ -448,9 +422,9 @@ function TrendPanel({ analytics }) {
             <button
               key={item.label}
               type="button"
-              onMouseEnter={() => setActivePoint(item)}
-              onFocus={() => setActivePoint(item)}
-              onClick={() => setActivePoint(item)}
+              onMouseEnter={() => setActivePointLabel(item.label)}
+              onFocus={() => setActivePointLabel(item.label)}
+              onClick={() => setActivePointLabel(item.label)}
               className="rounded-full border px-3 py-2 text-left transition"
               style={{
                 borderColor:
@@ -477,13 +451,13 @@ function TrendPanel({ analytics }) {
 }
 
 function BreakdownPanel({ dashboard, analytics }) {
-  const defaultMonth =
-    analytics.categoryTimeline.find((month) => month.label === "Mar") ||
-    analytics.categoryTimeline[analytics.categoryTimeline.length - 1] ||
-    null;
-  const [activeMonth, setActiveMonth] = useState(
-    defaultMonth,
-  );
+  const [activeMonthLabel, setActiveMonthLabel] = useState(() => {
+    const defaultMonth = analytics.categoryTimeline[analytics.categoryTimeline.length - 1];
+    return defaultMonth?.label || null;
+  });
+  const activeMonth = analytics.categoryTimeline.find((month) => month.label === activeMonthLabel) ||
+    analytics.categoryTimeline[analytics.categoryTimeline.length - 1] || null;
+
   const selectedSegments = [...(activeMonth?.segments || [])].sort(
     (first, second) => second.amount - first.amount,
   );
@@ -509,7 +483,7 @@ function BreakdownPanel({ dashboard, analytics }) {
               <button
                 key={month.label}
                 type="button"
-                onClick={() => setActiveMonth(month)}
+              onClick={() => setActiveMonthLabel(month.label)}
                 className="rounded-full border px-3 py-2 text-sm transition"
                 style={{
                   borderColor: isActive ? "var(--accent-border)" : "var(--card-border)",
@@ -527,7 +501,7 @@ function BreakdownPanel({ dashboard, analytics }) {
       {dashboard.spendingBreakdown.length > 0 ? (
         <div className="mt-8 space-y-6">
           <div
-            className="rounded-[1.75rem] border p-5"
+            className="rounded-[1.75rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
             style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -561,7 +535,7 @@ function BreakdownPanel({ dashboard, analytics }) {
 
           <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div
-              className="rounded-[1.75rem] border p-5"
+              className="rounded-[1.75rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
               style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
             >
               <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
@@ -595,7 +569,7 @@ function BreakdownPanel({ dashboard, analytics }) {
             </div>
 
             <div
-              className="flex min-h-[340px] flex-wrap items-center justify-center gap-6 rounded-[1.75rem] border p-6"
+              className="flex min-h-[340px] flex-wrap items-center justify-center gap-6 rounded-[1.75rem] border p-6 transition-transform duration-300 hover:-translate-y-1"
               style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.01)" }}
             >
               {selectedSegments.filter((item) => item.amount > 0).length > 0 ? (
@@ -662,9 +636,11 @@ function BreakdownPanel({ dashboard, analytics }) {
 }
 
 function CashFlowPanel({ dashboard }) {
-  const [activeMonth, setActiveMonth] = useState(
-    dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null,
+  const [activeMonthLabel, setActiveMonthLabel] = useState(
+    dashboard.monthlyBars[dashboard.monthlyBars.length - 1]?.label || null,
   );
+  const activeMonth = dashboard.monthlyBars.find((item) => item.label === activeMonthLabel) ||
+    dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null;
   const width = 760;
   const height = 220;
   const xOffset = 24;
@@ -708,7 +684,7 @@ function CashFlowPanel({ dashboard }) {
       </div>
 
       <div
-        className="mt-8 rounded-[1.75rem] border p-4"
+        className="mt-8 rounded-[1.75rem] border p-4 transition-transform duration-300 hover:-translate-y-1"
         style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
       >
         <div className="grid gap-4 md:grid-cols-[120px_1fr] md:items-end">
@@ -785,8 +761,8 @@ function CashFlowPanel({ dashboard }) {
                     r={isActive ? "6.5" : "4"}
                     fill="rgba(37, 99, 235, 0.95)"
                     className="cursor-pointer"
-                    onMouseEnter={() => setActiveMonth(item)}
-                    onFocus={() => setActiveMonth(item)}
+                    onMouseEnter={() => setActiveMonthLabel(item.label)}
+                    onFocus={() => setActiveMonthLabel(item.label)}
                   />
                   <circle
                     cx={x}
@@ -794,8 +770,8 @@ function CashFlowPanel({ dashboard }) {
                     r={isActive ? "6.5" : "4"}
                     fill="rgba(251, 113, 133, 0.95)"
                     className="cursor-pointer"
-                    onMouseEnter={() => setActiveMonth(item)}
-                    onFocus={() => setActiveMonth(item)}
+                    onMouseEnter={() => setActiveMonthLabel(item.label)}
+                    onFocus={() => setActiveMonthLabel(item.label)}
                   />
                 </g>
               );
@@ -808,9 +784,9 @@ function CashFlowPanel({ dashboard }) {
             <button
               key={item.label}
               type="button"
-              onMouseEnter={() => setActiveMonth(item)}
-              onFocus={() => setActiveMonth(item)}
-              onClick={() => setActiveMonth(item)}
+              onMouseEnter={() => setActiveMonthLabel(item.label)}
+              onFocus={() => setActiveMonthLabel(item.label)}
+              onClick={() => setActiveMonthLabel(item.label)}
               className="rounded-full border px-3 py-2 text-left transition"
               style={{
                 borderColor:
@@ -835,7 +811,7 @@ function CashFlowPanel({ dashboard }) {
 
       {activeMonth ? (
         <div
-          className="mt-6 rounded-[1.5rem] border p-4"
+          className="mt-6 rounded-[1.5rem] border p-4 transition-transform duration-300 hover:-translate-y-1"
           style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
         >
           <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
@@ -930,7 +906,7 @@ function ProgressRow({ label, value, width }) {
 function MetricChip({ label, value }) {
   return (
     <div
-      className="rounded-[1.5rem] border px-4 py-4"
+      className="rounded-[1.5rem] border px-4 py-4 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "rgba(255, 255, 255, 0.04)",
         borderColor: "var(--card-border)",
@@ -947,7 +923,7 @@ function MetricChip({ label, value }) {
 function SnapshotRow({ label, value, accent }) {
   return (
     <div
-      className="flex items-center justify-between rounded-[1.4rem] border px-4 py-4"
+      className="flex items-center justify-between rounded-[1.4rem] border px-4 py-4 transition-transform duration-300 hover:-translate-y-1"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <span className="text-sm text-[var(--text-secondary)]">{label}</span>
@@ -970,7 +946,7 @@ function LegendDot({ color, label }) {
 function ChartStat({ label, value, detail }) {
   return (
     <div
-      className="rounded-[1.25rem] border px-4 py-4"
+      className="rounded-[1.25rem] border px-4 py-4 transition-transform duration-300 hover:-translate-y-1"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-secondary)]">
@@ -985,7 +961,7 @@ function ChartStat({ label, value, detail }) {
 function EmptyPanel({ title, detail, compact = false }) {
   return (
     <div
-      className="rounded-[2rem] border p-7"
+      className="rounded-[2rem] border p-7 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
@@ -1005,7 +981,7 @@ function EmptyPanel({ title, detail, compact = false }) {
 function LoadingState() {
   return (
     <section
-      className="rounded-[2rem] border p-8"
+      className="rounded-[2rem] border p-8 transition-transform duration-300 hover:-translate-y-1"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
@@ -1025,7 +1001,7 @@ function LoadingState() {
 function Panel({ children, className = "" }) {
   return (
     <div
-      className={`rounded-[2rem] border p-7 ${className}`}
+      className={`rounded-[2rem] border p-7 transition-transform duration-300 hover:-translate-y-1 ${className}`}
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
@@ -1066,10 +1042,10 @@ function buildDashboardAnalytics(transactions, spendingBreakdown) {
   const sortedMonths = Object.keys(monthlyMap).sort();
   const latestMonthKey = sortedMonths[sortedMonths.length - 1] || getCurrentMonthKey();
   const visibleMonthKeys = getRecentMonthKeys(latestMonthKey, 5);
-  const topCategories = spendingBreakdown.slice(0, 5).map((item) => item.label);
+  const topCategories = spendingBreakdown.map((item) => item.label);
   const fallbackCategories = Array.from(
     new Set(expenseTransactions.map((item) => item.category)),
-  ).slice(0, 5);
+  );
   const visibleCategories = topCategories.length > 0 ? topCategories : fallbackCategories;
 
   const monthlyActivity = visibleMonthKeys.map((monthKey) => {

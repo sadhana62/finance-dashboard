@@ -195,6 +195,13 @@ export function buildInsights(transactions, insightsMeta = {}) {
           "As more past transactions are added, you will start seeing stronger month-on-month comparisons here.",
       };
 
+  const categoryCorrelation = {
+    title: "Category-Expense Correlation",
+    detail: topTwoCategories.length >= 2
+      ? `A strong relationship exists between your total expenses and top categories. ${concentration}% of your total outflows are driven entirely by ${topTwoCategories[0].label} and ${topTwoCategories[1].label}. Stabilizing these will drastically reduce budget volatility.`
+      : "Add more diverse transactions to see how different categories influence your overall expenses.",
+  };
+
   return {
     topCategory,
     monthlyComparison,
@@ -202,6 +209,7 @@ export function buildInsights(transactions, insightsMeta = {}) {
     savingsTip,
     previousDateInsight,
     categoryBreakdown,
+    categoryCorrelation,
   };
 }
 
