@@ -268,7 +268,7 @@ function TrendPanel({ analytics }) {
     (best, current) => (current.count > (best?.count ?? -Infinity) ? current : best),
     null,
   );
-  const axisLabels = [max, max - spread / 2, min].map((value) => Math.round(value));
+  const axisLabels = Array.from(new Set([max, max - spread / 2, min].map((value) => Math.round(value))));
   const trendValues = calculateTrendLine(values);
 
   const points = analytics.monthlyActivity
@@ -677,7 +677,7 @@ function CashFlowPanel({ dashboard }) {
   const min = values.length > 0 ? Math.min(...values) : 0;
   const max = values.length > 0 ? Math.max(...values) : 0;
   const spread = max - min || 1;
-  const axisLabels = [max, max - spread / 2, min].map((value) => Math.round(value));
+  const axisLabels = Array.from(new Set([max, max - spread / 2, min].map((value) => Math.round(value))));
 
   const getY = (value) =>
     height - ((value - min) / spread) * (height - 32) - 16;
