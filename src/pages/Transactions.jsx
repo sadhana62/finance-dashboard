@@ -452,7 +452,7 @@ function TransactionRow({
   if (isEditing) {
     return (
       <div
-        className="rounded-[1.5rem] border px-4 py-4 md:px-5 transition-transform duration-300 hover:-translate-y-1"
+        className="rounded-[1.5rem] border px-4 py-4 md:px-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
         style={{
           borderColor: "var(--accent-border)",
           background: "rgba(255,255,255,0.04)",
@@ -544,7 +544,7 @@ function TransactionRow({
 
   return (
     <div
-      className="rounded-[1.5rem] border px-4 py-4 md:px-5 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[1.5rem] border px-4 py-4 md:px-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
       style={{
         borderColor: "var(--card-border)",
         background: "rgba(255,255,255,0.03)",
@@ -650,11 +650,10 @@ function AdminIconButton({ label, icon, onClick, tone = "default" }) {
 function SummaryTile({ label, value }) {
   return (
     <div
-      className="rounded-[1.75rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[1.75rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
       }}
     >
       <p className="text-sm text-[var(--text-secondary)]">{label}</p>
@@ -691,7 +690,7 @@ function InfoPill({ children, accent = false }) {
 function EmptyState({ title, detail, compact = false }) {
   return (
     <div
-      className={`rounded-[1.5rem] border px-5 text-center transition-transform duration-300 hover:-translate-y-1 ${compact ? "py-8" : "mt-6 py-10"}`}
+      className={`rounded-[1.5rem] border px-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20 ${compact ? "py-8" : "mt-6 py-10"}`}
       style={{
         borderColor: "var(--card-border)",
         background: "rgba(255,255,255,0.03)",
@@ -706,11 +705,10 @@ function EmptyState({ title, detail, compact = false }) {
 function LoadingState({ title }) {
   return (
     <section
-      className="rounded-[2rem] border p-8 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[2rem] border p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
       }}
     >
       <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
@@ -949,11 +947,10 @@ function AddConfirmationDialog({ transaction, onCancel, onConfirm }) {
 function Panel({ children }) {
   return (
     <div
-      className="rounded-[2rem] border p-6 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[2rem] border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
         backdropFilter: "blur(18px)",
       }}
     >

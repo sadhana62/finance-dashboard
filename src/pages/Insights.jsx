@@ -241,7 +241,7 @@ function InsightCard({ icon: Icon, eyebrow, title, detail }) {
 function InsightStrip({ label, title, detail }) {
   return (
     <div
-      className="rounded-[1.6rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <p className="text-xs uppercase tracking-[0.22em] text-[var(--accent)]">{label}</p>
@@ -254,7 +254,7 @@ function InsightStrip({ label, title, detail }) {
 function TipCard({ title, detail }) {
   return (
     <div
-      className="rounded-[1.5rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[1.5rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <p className="text-lg font-semibold tracking-tight">{title}</p>
@@ -279,11 +279,10 @@ function EmptyState({ title, detail, compact = false }) {
 function LoadingState() {
   return (
     <section
-      className="rounded-[2rem] border p-8 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[2rem] border p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
       }}
     >
       <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
@@ -299,11 +298,10 @@ function LoadingState() {
 function Panel({ children }) {
   return (
     <div
-      className="rounded-[2rem] border p-6 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[2rem] border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
         backdropFilter: "blur(18px)",
       }}
     >

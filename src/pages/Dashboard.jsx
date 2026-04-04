@@ -199,7 +199,7 @@ function HighlightsPanel({ dashboard }) {
       </div>
 
       <div
-        className="mt-8 rounded-[1.6rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
+        className="mt-8 rounded-[1.6rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
         style={{
           borderColor: "var(--card-border)",
           background:
@@ -312,7 +312,7 @@ function TrendPanel({ analytics }) {
         </div>
       </div>
 
-      <div className="mt-8 rounded-[1.75rem] border p-4 transition-transform duration-300 hover:-translate-y-1" style={{ borderColor: "var(--card-border)" }}>
+      <div className="mt-8 rounded-[1.75rem] border p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20" style={{ borderColor: "var(--card-border)" }}>
         <div className="mb-5 grid gap-3 md:grid-cols-3">
           <ChartStat
             label="Selected month"
@@ -501,7 +501,7 @@ function BreakdownPanel({ dashboard, analytics }) {
       {dashboard.spendingBreakdown.length > 0 ? (
         <div className="mt-8 space-y-6">
           <div
-            className="rounded-[1.75rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
+            className="rounded-[1.75rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
             style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
           >
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -535,7 +535,7 @@ function BreakdownPanel({ dashboard, analytics }) {
 
           <div className="grid gap-6 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
             <div
-              className="rounded-[1.75rem] border p-5 transition-transform duration-300 hover:-translate-y-1"
+              className="rounded-[1.75rem] border p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
               style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
             >
               <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
@@ -569,7 +569,7 @@ function BreakdownPanel({ dashboard, analytics }) {
             </div>
 
             <div
-              className="flex min-h-[340px] flex-wrap items-center justify-center gap-6 rounded-[1.75rem] border p-6 transition-transform duration-300 hover:-translate-y-1"
+              className="flex min-h-[340px] flex-wrap items-center justify-center gap-6 rounded-[1.75rem] border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
               style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.01)" }}
             >
               {selectedSegments.filter((item) => item.amount > 0).length > 0 ? (
@@ -588,27 +588,28 @@ function BreakdownPanel({ dashboard, analytics }) {
                     return (
                       <div
                         key={`${activeMonth?.label}-${item.label}`}
-                        className="group flex flex-col items-center justify-center rounded-full text-center transition-transform hover:scale-105"
+                        className="group flex flex-col items-center justify-center rounded-full text-center text-white transition-all duration-300 hover:scale-[1.08]"
                         style={{
                           width: size,
                           height: size,
-                          background: `radial-gradient(circle at 30% 30%, ${themeColor}33, transparent)`,
-                          backgroundColor: "rgba(255,255,255,0.03)",
-                          border: `1.5px solid ${themeColor}99`,
-                          boxShadow: `0 8px 32px -8px ${themeColor}44`,
+                          background: `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), ${themeColor} 60%, rgba(0, 0, 0, 0.4))`,
+                          boxShadow: `inset -5px -5px 15px rgba(0,0,0,0.2), inset 5px 5px 15px rgba(255,255,255,0.4), 0 15px 35px -5px ${themeColor}88`,
+                          textShadow: "0 1px 3px rgba(0,0,0,0.4)",
                         }}
                       >
-                        <span className="max-w-[80%] truncate text-sm font-medium">
+                        <span className="max-w-[80%] truncate text-sm font-semibold">
                           {item.label}
                         </span>
-                        <span className="mt-1 text-xs text-[var(--text-secondary)]">
+                        <span className="mt-1 text-xs font-medium text-white/90">
                           {formatAmount(item.amount)}
                         </span>
                         <span
-                          className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                          className="mt-1 rounded-full px-2.5 py-0.5 text-sm font-bold tracking-wide"
                           style={{
-                            background: `${themeColor}22`,
+                            background: "rgba(255, 255, 255, 0.95)",
                             color: themeColor,
+                            textShadow: "none",
+                            boxShadow: "0 3px 8px rgba(0,0,0,0.15)",
                           }}
                         >
                           {percent}%
@@ -684,7 +685,7 @@ function CashFlowPanel({ dashboard }) {
       </div>
 
       <div
-        className="mt-8 rounded-[1.75rem] border p-4 transition-transform duration-300 hover:-translate-y-1"
+        className="mt-8 rounded-[1.75rem] border p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
         style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
       >
         <div className="grid gap-4 md:grid-cols-[120px_1fr] md:items-end">
@@ -811,7 +812,7 @@ function CashFlowPanel({ dashboard }) {
 
       {activeMonth ? (
         <div
-          className="mt-6 rounded-[1.5rem] border p-4 transition-transform duration-300 hover:-translate-y-1"
+          className="mt-6 rounded-[1.5rem] border p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
           style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
         >
           <p className="text-sm uppercase tracking-[0.2em] text-[var(--accent)]">
@@ -906,7 +907,7 @@ function ProgressRow({ label, value, width }) {
 function MetricChip({ label, value }) {
   return (
     <div
-      className="rounded-[1.5rem] border px-4 py-4 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[1.5rem] border px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
       style={{
         background: "rgba(255, 255, 255, 0.04)",
         borderColor: "var(--card-border)",
@@ -923,7 +924,7 @@ function MetricChip({ label, value }) {
 function SnapshotRow({ label, value, accent }) {
   return (
     <div
-      className="flex items-center justify-between rounded-[1.4rem] border px-4 py-4 transition-transform duration-300 hover:-translate-y-1"
+      className="flex items-center justify-between rounded-[1.4rem] border px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <span className="text-sm text-[var(--text-secondary)]">{label}</span>
@@ -946,7 +947,7 @@ function LegendDot({ color, label }) {
 function ChartStat({ label, value, detail }) {
   return (
     <div
-      className="rounded-[1.25rem] border px-4 py-4 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[1.25rem] border px-4 py-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/20"
       style={{ borderColor: "var(--card-border)", background: "rgba(255,255,255,0.03)" }}
     >
       <p className="text-xs uppercase tracking-[0.18em] text-[var(--text-secondary)]">
@@ -961,11 +962,10 @@ function ChartStat({ label, value, detail }) {
 function EmptyPanel({ title, detail, compact = false }) {
   return (
     <div
-      className="rounded-[2rem] border p-7 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[2rem] border p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
       }}
     >
       <div className={compact ? "" : "py-6"}>
@@ -981,11 +981,10 @@ function EmptyPanel({ title, detail, compact = false }) {
 function LoadingState() {
   return (
     <section
-      className="rounded-[2rem] border p-8 transition-transform duration-300 hover:-translate-y-1"
+      className="rounded-[2rem] border p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20"
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
       }}
     >
       <p className="text-sm uppercase tracking-[0.24em] text-[var(--accent)]">
@@ -1001,11 +1000,10 @@ function LoadingState() {
 function Panel({ children, className = "" }) {
   return (
     <div
-      className={`rounded-[2rem] border p-7 transition-transform duration-300 hover:-translate-y-1 ${className}`}
+      className={`rounded-[2rem] border p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/20 ${className}`}
       style={{
         background: "var(--card-bg)",
         borderColor: "var(--card-border)",
-        boxShadow: "var(--shadow)",
         backdropFilter: "blur(18px)",
       }}
     >
