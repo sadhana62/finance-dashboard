@@ -8,8 +8,19 @@ export default function Topbar({ theme, setTheme }) {
   const role = useSelector(selectRole);
 
   return (
-    <div className="flex w-full justify-end">
-      <div className="flex w-full flex-wrap items-center justify-end gap-3">
+    <div className="flex w-full items-start justify-between gap-4 sm:items-center">
+      {/* Mobile Branding - Only visible on small screens */}
+      <div className="flex-1 lg:hidden">
+        <h1 className="text-xl font-semibold leading-tight tracking-tight text-[var(--accent)] sm:text-2xl">
+          Transaction
+          <br className="sm:hidden" />
+          <span className="hidden sm:inline"> </span>
+          Ledger
+        </h1>
+      </div>
+
+      {/**/}
+      <div className="ml-auto flex shrink-0 items-center justify-end gap-2 sm:gap-3">
         <RoleSwitcher role={role} setRole={(value) => dispatch(setRole(value))} />
         <ThemeToggle theme={theme} setTheme={setTheme} />
       </div>
