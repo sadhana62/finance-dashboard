@@ -6,7 +6,7 @@ import {
   selectFinanceStatus,
   selectTransactions,
 } from "../store/financeSlice";
-import { formatAmount } from "../utils/formatters";
+import { formatAmount, formatMonthLabel } from "../utils/formatters";
 
 const cardIcons = {
   balance: Wallet,
@@ -22,6 +22,10 @@ export default function Dashboard() {
   const transactions = useSelector(selectTransactions);
   const dashboard = useSelector(selectDashboardData);
   const analytics = buildDashboardAnalytics(transactions, dashboard.spendingBreakdown);
+
+  const [cashFlowMonth, setCashFlowMonth] = useState(
+    dashboard.monthlyBars[dashboard.monthlyBars.length - 1]?.label || null,
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -99,8 +103,16 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <CashFlowPanel dashboard={dashboard} />
-        <SnapshotPanel dashboard={dashboard} />
+        <CashFlowPanel
+          dashboard={dashboard}
+          activeMonthLabel={cashFlowMonth}
+          setActiveMonthLabel={setCashFlowMonth}
+        />
+        <SnapshotPanel
+          dashboard={dashboard}
+          activeMonthLabel={cashFlowMonth}
+          transactions={transactions}
+        />
       </div>
     </section>
   );
@@ -636,10 +648,7 @@ function BreakdownPanel({ dashboard, analytics }) {
   );
 }
 
-function CashFlowPanel({ dashboard }) {
-  const [activeMonthLabel, setActiveMonthLabel] = useState(
-    dashboard.monthlyBars[dashboard.monthlyBars.length - 1]?.label || null,
-  );
+function CashFlowPanel({ dashboard, activeMonthLabel, setActiveMonthLabel }) {
   const activeMonth = dashboard.monthlyBars.find((item) => item.label === activeMonthLabel) ||
     dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null;
   const width = 760;
@@ -851,28 +860,49 @@ function CashFlowPanel({ dashboard }) {
   );
 }
 
-function SnapshotPanel({ dashboard }) {
+function SnapshotPanel({ dashboard, activeMonthLabel, transactions }) {
+  const activeMonthData = dashboard.monthlyBars.find((item) => item.label === activeMonthLabel) ||
+    dashboard.monthlyBars[dashboard.monthlyBars.length - 1] || null;
+
+  const monthTransactions = transactions.filter((t) => {
+    const monthKey = t.date.slice(0, 7);
+    const label = formatMonthLabel(monthKey).split(" ")[0];
+    return label === (activeMonthData?.label || activeMonthLabel);
+  });
+
+  const income = activeMonthData?.income || 0;
+  const expense = activeMonthData?.expense || 0;
+
+  const savingsRate = income > 0 ? Math.max(0, Math.round(((income - expense) / income) * 100)) : 0;
+  const expenseRatio = income > 0 ? Math.round((expense / income) * 100) : 0;
+
+  const categoryTotals = monthTransactions.filter((t) => t.type === "expense").reduce((acc, t) => {
+    acc[t.category] = (acc[t.category] || 0) + t.amount;
+    return acc;
+  }, {});
+  const highestCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
+
   return (
     <Panel>
       <h3 className="text-2xl font-semibold tracking-tight">Monthly snapshot</h3>
       <p className="mt-2 text-sm text-[var(--text-secondary)]">
-        A quick summary of how efficiently this month is shaping up.
+        A quick summary of how efficiently {activeMonthData?.label || "this month"} is shaping up.
       </p>
 
       <div className="mt-8 space-y-5">
         <SnapshotRow
           label="Savings rate"
-          value={`${dashboard.savingsRate}%`}
+          value={`${savingsRate}%`}
           accent="var(--success)"
         />
         <SnapshotRow
           label="Expense ratio"
-          value={`${dashboard.expenseRatio}%`}
+          value={`${expenseRatio}%`}
           accent="var(--warning)"
         />
         <SnapshotRow
           label="Largest category"
-          value={dashboard.highestCategory}
+          value={highestCategory}
           accent="var(--accent)"
         />
       </div>
